@@ -1,5 +1,5 @@
 use dioxus::prelude::*;
-use ui::{BootSequence, LoginScreen, Taskbar, DesktopIcons};
+use ui::{BootSequence, LoginScreen, Taskbar, DesktopIcons, Terminal};
 
 const FAVICON: Asset = asset!("/assets/favicon.ico");
 const MAIN_CSS: Asset = asset!("/assets/main.css");
@@ -20,6 +20,7 @@ fn App() -> Element {
     let mut os_state = use_signal(|| OsState::Booting);
     let mut current_theme = use_signal(|| "powershell".to_string());
     let mut wallpaper = use_signal(|| None::<String>);
+    let mut external_command = use_signal(|| None::<String>);
 
     // Load saved preferences on client-side mount
     use_effect(move || {
@@ -86,7 +87,7 @@ fn App() -> Element {
                         // Desktop Icons Layer
                         DesktopIcons {
                             on_icon_click: move |cmd: String| {
-                                web_sys::console::log_1(&format!("Double-clicked icon with command: {}", cmd).into());
+                                external_command.set(Some(cmd));
                             }
                         }
 
@@ -95,9 +96,8 @@ fn App() -> Element {
                             class: "h-[calc(100vh-40px)] relative flex items-center justify-center p-4 overflow-hidden z-10 pointer-events-none",
                             div {
                                 class: "w-full max-w-4xl h-full flex items-center justify-center pointer-events-auto",
-                                div {
-                                    class: "text-terminal-green text-xl terminal-glow",
-                                    "Desktop Area (Current Theme: {current_theme}) - Terminal Coming Soon"
+                                Terminal {
+                                    external_command,
                                 }
                             }
                         }

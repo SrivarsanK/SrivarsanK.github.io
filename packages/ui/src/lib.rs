@@ -20,3 +20,6 @@ pub use taskbar::Taskbar;
 
 mod desktop_icons;
 pub use desktop_icons::DesktopIcons;
+
+mod terminal;
+pub use terminal::Terminal;
