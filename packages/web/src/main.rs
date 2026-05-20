@@ -81,14 +81,25 @@ fn App() -> Element {
                         class: "h-screen text-foreground relative overflow-hidden",
                         style: "{desktop_style}",
                         
-                        // Background Overlay if wallpaper is set
+                        // Background Overlay
                         if wallpaper().is_some() {
-                            div { class: "absolute inset-0 bg-black/40", style: "z-index: 0;" }
+                            div { style: "position: absolute; inset: 0; background: rgba(0,0,0,0.35); z-index: 0;" }
                         }
 
-                        // Desktop Icons Layer — sits on top, z-index: 20
+                        // Terminal — full-viewport positioned layer, z-index 10
+                        // This MUST be a full-size absolute container so the terminal's own
+                        // absolute + transform positioning works relative to the viewport
                         div {
-                            style: "position: absolute; top: 0; left: 0; right: 0; bottom: 40px; z-index: 20;",
+                            style: "position: absolute; top: 0; left: 0; right: 0; bottom: 40px; z-index: 10; pointer-events: none;",
+                            Terminal {
+                                external_command,
+                                current_theme: current_theme.clone(),
+                            }
+                        }
+
+                        // Desktop Icons Layer — z-index 20, above terminal, pointer-events own
+                        div {
+                            style: "position: absolute; top: 0; left: 0; right: 0; bottom: 40px; z-index: 20; pointer-events: none;",
                             DesktopIcons {
                                 on_icon_click: move |cmd: String| {
                                     external_command.set(Some(cmd));
@@ -96,19 +107,7 @@ fn App() -> Element {
                             }
                         }
 
-                        // Terminal Layer — z-index: 10, fills space above taskbar
-                        div {
-                            style: "position: absolute; top: 0; left: 0; right: 0; bottom: 40px; z-index: 10; display: flex; align-items: center; justify-content: center; padding: 1rem; pointer-events: none;",
-                            div {
-                                style: "width: 100%; max-width: 56rem; height: 100%; display: flex; align-items: center; justify-content: center; pointer-events: auto;",
-                                Terminal {
-                                    external_command,
-                                    current_theme: current_theme.clone(),
-                                }
-                            }
-                        }
-
-                        // Bottom Taskbar — fixed at bottom, z-index: 50
+                        // Bottom Taskbar — z-index: 50
                         Taskbar {
                             current_theme,
                             wallpaper,

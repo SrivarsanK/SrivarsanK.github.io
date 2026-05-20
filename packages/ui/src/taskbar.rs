@@ -42,8 +42,8 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
     });
 
     let time_val = time();
-    let time_str = time_val.format("%H:%M").to_string();
-    let date_str = time_val.format("%Y-%m-%d").to_string();
+    let time_str = time_val.format("%-I:%M %P").to_string();
+    let date_str = time_val.format("%-d/%-m/%Y").to_string();
 
     let mut wallpaper = props.wallpaper;
     let mut current_theme = props.current_theme;
@@ -116,16 +116,16 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
                             
                             // User Info Card
                             div {
-                                class: "p-4 border-b border-white/5",
+                                style: "padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05);",
                                 div {
-                                    class: "flex items-center gap-3 px-2 py-3 rounded-md hover:bg-white/5 transition-colors cursor-default",
+                                    style: "display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; border-radius: 0.375rem; cursor: default;",
                                     div {
-                                        class: "w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center font-bold text-white",
-                                        "O"
+                                        style: "width: 2.5rem; height: 2.5rem; border-radius: 50%; background: linear-gradient(135deg, #6e6aca, #8b5cf6); display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff; font-size: 1rem; flex-shrink: 0;",
+                                        "R"
                                     }
                                     div {
-                                        div { class: "text-sm font-semibold text-white", "Ovi ren" }
-                                        div { class: "text-[11px] text-white/50", "Writer • Script Author" }
+                                        div { style: "font-size: 0.875rem; font-weight: 600; color: #fff;", "Ovi ren" }
+                                        div { style: "font-size: 0.7rem; color: rgba(255,255,255,0.45); line-height: 1.4;", "Writer • Script Author" }
                                     }
                                 }
                             }
@@ -180,13 +180,13 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
 
                             // Start Menu Footer
                             div {
-                                class: "mt-4 p-4 bg-black/20 flex items-center justify-between text-[11px] text-white/40",
+                                style: "padding: 0.75rem 1rem; background: rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: space-between;",
                                 div {
                                     onclick: move |_| {
                                         is_start_open.set(false);
                                         props.on_logout.call(());
                                     },
-                                    class: "flex items-center gap-2 hover:text-white cursor-pointer transition-colors group",
+                                    style: "display: flex; align-items: center; gap: 0.4rem; font-size: 0.7rem; color: rgba(255,255,255,0.5); cursor: pointer; transition: color 0.15s;",
                                     svg {
                                         xmlns: "http://www.w3.org/2000/svg",
                                         width: "12",
@@ -197,7 +197,6 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
                                         stroke_width: "2",
                                         stroke_linecap: "round",
                                         stroke_linejoin: "round",
-                                        class: "group-hover:scale-110 transition-transform",
                                         path { d: "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" }
                                         polyline { points: "16 17 21 12 16 7" }
                                         line { x1: "21", y1: "12", x2: "9", y2: "12" }
@@ -209,7 +208,7 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
                                         is_start_open.set(false);
                                         is_reset_open.set(true);
                                     },
-                                    class: "hover:text-red-400 cursor-pointer transition-colors font-semibold",
+                                    style: "font-size: 0.7rem; color: rgba(255,255,255,0.5); cursor: pointer; font-weight: 600; transition: color 0.15s;",
                                     "Reset"
                                 }
                             }

@@ -316,12 +316,42 @@ pub fn Terminal(props: TerminalProps) -> Element {
         _            => ("#012456", "#ffffff", "#00ff00", "guest@portfolio:~$ ",  "#1a3a6e"),
     };
 
+    // All known commands for Tab autocomplete
+    const ALL_COMMANDS: &[&str] = &[
+        "help", "about", "skills", "projects", "contact",
+        "whoami", "date", "waifu", "joke", "clear", "cls",
+    ];
+
     let handle_key_down = move |e: Event<KeyboardData>| {
         match e.key() {
             Key::Enter => {
                 let input = current_input.read().clone();
                 execute_command(input);
                 current_input.set(String::new());
+            }
+            Key::Tab => {
+                e.prevent_default();
+                let partial = current_input.read().to_lowercase();
+                if !partial.is_empty() {
+                    let matches: Vec<&str> = ALL_COMMANDS
+                        .iter()
+                        .filter(|cmd| cmd.starts_with(partial.as_str()))
+                        .copied()
+                        .collect();
+                    if matches.len() == 1 {
+                        current_input.set(matches[0].to_string());
+                    } else if matches.len() > 1 {
+                        // Show matches as a hint line
+                        let hint = matches.join("  ");
+                        let id = next_id();
+                        next_id += 1;
+                        lines.write().push(TerminalLine {
+                            id,
+                            line_type: LineType::Info,
+                            content: hint,
+                        });
+                    }
+                }
             }
             Key::ArrowUp => {
                 let h = command_history.read();
@@ -463,18 +493,20 @@ pub fn Terminal(props: TerminalProps) -> Element {
 
                 // Input Line
                 div {
-                    style: "display: flex; align-items: center; margin-top: 0.5rem;",
-                    span { style: "color: {prompt_color}; margin-right: 0.5rem; flex-shrink: 0;", "{prompt_text}" }
+                    style: "display: flex; align-items: center; margin-top: 0.5rem; flex-shrink: 0;",
+                    span { style: "color: {prompt_color}; margin-right: 0.5rem; flex-shrink: 0; white-space: nowrap;", "{prompt_text}" }
                     input {
                         id: "terminal-input",
                         r#type: "text",
                         value: "{current_input()}",
                         oninput: move |e| current_input.set(e.value()),
                         onkeydown: handle_key_down,
-                        style: "flex: 1; background: transparent; outline: none; border: none; color: {text_color}; font-family: monospace; font-size: 0.875rem;",
+                        style: "flex: 1; min-width: 0; background: transparent; outline: none; border: none; color: {text_color}; font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; caret-color: {prompt_color};",
                         autofocus: true,
                         spellcheck: false,
                         autocomplete: "off",
+                        autocorrect: "off",
+                        autocapitalize: "off",
                     }
                 }
             }
