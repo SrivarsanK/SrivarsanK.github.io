@@ -14,3 +14,6 @@ pub use boot_sequence::BootSequence;
 
 mod login_screen;
 pub use login_screen::LoginScreen;
+
+mod taskbar;
+pub use taskbar::Taskbar;
