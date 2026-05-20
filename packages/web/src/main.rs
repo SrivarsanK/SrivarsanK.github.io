@@ -1,5 +1,5 @@
 use dioxus::prelude::*;
-use ui::{BootSequence, LoginScreen, Taskbar};
+use ui::{BootSequence, LoginScreen, Taskbar, DesktopIcons};
 
 const FAVICON: Asset = asset!("/assets/favicon.ico");
 const MAIN_CSS: Asset = asset!("/assets/main.css");
@@ -83,12 +83,22 @@ fn App() -> Element {
                             div { class: "absolute inset-0 bg-black/40 z-0" }
                         }
 
+                        // Desktop Icons Layer
+                        DesktopIcons {
+                            on_icon_click: move |cmd: String| {
+                                web_sys::console::log_1(&format!("Double-clicked icon with command: {}", cmd).into());
+                            }
+                        }
+
                         // Main Desktop Content
                         main {
-                            class: "h-[calc(100vh-40px)] relative flex items-center justify-center p-4 overflow-hidden z-10",
+                            class: "h-[calc(100vh-40px)] relative flex items-center justify-center p-4 overflow-hidden z-10 pointer-events-none",
                             div {
-                                class: "text-terminal-green text-xl terminal-glow",
-                                "Desktop Area (Current Theme: {current_theme})"
+                                class: "w-full max-w-4xl h-full flex items-center justify-center pointer-events-auto",
+                                div {
+                                    class: "text-terminal-green text-xl terminal-glow",
+                                    "Desktop Area (Current Theme: {current_theme}) - Terminal Coming Soon"
+                                }
                             }
                         }
 

@@ -17,3 +17,6 @@ pub use login_screen::LoginScreen;
 
 mod taskbar;
 pub use taskbar::Taskbar;
+
+mod desktop_icons;
+pub use desktop_icons::DesktopIcons;
