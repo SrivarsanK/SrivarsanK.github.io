@@ -8,3 +8,9 @@ pub use navbar::Navbar;
 
 mod echo;
 pub use echo::Echo;
+
+mod boot_sequence;
+pub use boot_sequence::BootSequence;
+
+mod login_screen;
+pub use login_screen::LoginScreen;
