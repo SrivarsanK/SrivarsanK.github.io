@@ -8,6 +8,7 @@ use wasm_bindgen::JsCast;
 pub struct TaskbarProps {
     current_theme: Signal<String>,
     wallpaper: Signal<Option<String>>,
+    default_wallpaper: String,
     on_logout: EventHandler<()>,
     on_reset: EventHandler<()>,
 }
@@ -30,6 +31,7 @@ const THEMES: &[ThemeInfo] = &[
 pub fn Taskbar(props: TaskbarProps) -> Element {
     let mut is_start_open = use_signal(|| false);
     let mut is_theme_open = use_signal(|| false);
+    let mut is_wallpaper_open = use_signal(|| false);
     let mut is_reset_open = use_signal(|| false);
     let mut time = use_signal(|| Local::now());
 
@@ -83,63 +85,70 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
         footer {
             class: "fixed bottom-0 left-0 right-0 h-[40px] bg-[#00122e]/80 backdrop-blur-md border-t border-white/10 z-50 flex items-center justify-between px-2 select-none",
             
-            // Left Side: Start Button
+            // Left Side: Start Button & Terminal Icon
             div {
-                class: "flex items-center",
+                class: "flex items-center gap-1 h-full",
+                
+                // Start Button & Start Menu
                 div {
-                    class: "relative",
+                    class: "relative flex items-center h-full",
                     button {
                         onclick: move |_| is_start_open.toggle(),
-                        class: if is_start_open() { "flex items-center justify-center w-[48px] h-[40px] hover:bg-white/10 transition-colors bg-white/20" } else { "flex items-center justify-center w-[48px] h-[40px] hover:bg-white/10 transition-colors" },
+                        style: "background: transparent; border: none; padding: 0; outline: none; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 48px; height: 40px; transition: background-color 0.2s;",
+                        class: if is_start_open() { "bg-white/20" } else { "hover:bg-white/10" },
                         svg {
                             xmlns: "http://www.w3.org/2000/svg",
                             width: "20",
                             height: "20",
                             view_box: "0 0 24 24",
-                            fill: "currentColor",
-                            stroke: "currentColor",
+                            fill: "#60a5fa",
+                            stroke: "#60a5fa",
                             stroke_width: "2",
                             stroke_linecap: "round",
                             stroke_linejoin: "round",
-                            class: "text-blue-400 fill-blue-400",
-                            rect { x: "3", y: "3", width: "7", height: "7" }
-                            rect { x: "14", y: "3", width: "7", height: "7" }
-                            rect { x: "14", y: "14", width: "7", height: "7" }
-                            rect { x: "3", y: "14", width: "7", height: "7" }
+                            rect { x: "3", y: "3", width: "7", height: "7", rx: "1.5" }
+                            rect { x: "14", y: "3", width: "7", height: "7", rx: "1.5" }
+                            rect { x: "14", y: "14", width: "7", height: "7", rx: "1.5" }
+                            rect { x: "3", y: "14", width: "7", height: "7", rx: "1.5" }
                         }
                     }
 
                     // Start Menu Popup
                     if is_start_open() {
                         div {
-                            class: "absolute bottom-[48px] left-0 w-[300px] bg-[#1c1c1c]/95 backdrop-blur-xl border border-white/10 rounded-lg shadow-2xl overflow-hidden animate-in slide-in-from-bottom-2 duration-200 z-50",
+                            style: "position: absolute; bottom: 44px; left: 0; width: 300px; background-color: rgba(28, 28, 28, 0.95); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 0.5rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); overflow: hidden; display: flex; flex-direction: column; z-index: 100;",
                             
                             // User Info Card
                             div {
-                                style: "padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05);",
+                                style: "padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center;",
                                 div {
-                                    style: "display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; border-radius: 0.375rem; cursor: default;",
+                                    style: "display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; border-radius: 0.375rem; cursor: default; width: 100%; text-align: left;",
                                     div {
                                         style: "width: 2.5rem; height: 2.5rem; border-radius: 50%; background: linear-gradient(135deg, #6e6aca, #8b5cf6); display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff; font-size: 1rem; flex-shrink: 0;",
                                         "R"
                                     }
                                     div {
-                                        div { style: "font-size: 0.875rem; font-weight: 600; color: #fff;", "Ovi ren" }
-                                        div { style: "font-size: 0.7rem; color: rgba(255,255,255,0.45); line-height: 1.4;", "Writer • Script Author" }
+                                        style: "display: flex; flex-direction: column; text-align: left;",
+                                        div { style: "font-size: 0.875rem; font-weight: 600; color: #fff; line-height: 1.25;", "Ovi ren" }
+                                        div { style: "font-size: 0.7rem; color: rgba(255,255,255,0.45); line-height: 1.4; margin-top: 0.125rem;", "Writer • Script Author" }
                                     }
                                 }
                             }
 
                             // Pinned Section
                             div {
-                                class: "p-2 space-y-1",
-                                div { class: "px-3 py-2 text-[11px] font-semibold text-white/30 uppercase tracking-wider", "Pinned" }
+                                style: "padding: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem;",
+                                div {
+                                    style: "padding: 0.5rem 0.75rem; font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.05em; text-align: left;",
+                                    "Pinned"
+                                }
                                 
                                 a {
                                     href: "https://github.com",
                                     target: "_blank",
                                     rel: "noopener noreferrer",
-                                    class: "flex items-center gap-3 px-4 py-3 rounded-md hover:bg-white/10 transition-colors text-white/80 hover:text-white group",
+                                    style: "display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 0.375rem; transition: background-color 0.15s; text-decoration: none;",
+                                    class: "hover:bg-white/10 text-white/80 hover:text-white group",
                                     svg {
                                         xmlns: "http://www.w3.org/2000/svg",
                                         width: "20",
@@ -154,12 +163,13 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
                                         path { d: "M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" }
                                         path { d: "M9 18c-4.51 2-5-2-7-2" }
                                     }
-                                    span { class: "text-sm", "GitHub" }
+                                    span { style: "font-size: 0.875rem;", "GitHub" }
                                 }
 
                                 a {
                                     href: "mailto:hello@developer.dev",
-                                    class: "flex items-center gap-3 px-4 py-3 rounded-md hover:bg-white/10 transition-colors text-white/80 hover:text-white group",
+                                    style: "display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 0.375rem; transition: background-color 0.15s; text-decoration: none;",
+                                    class: "hover:bg-white/10 text-white/80 hover:text-white group",
                                     svg {
                                         xmlns: "http://www.w3.org/2000/svg",
                                         width: "20",
@@ -174,19 +184,20 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
                                         rect { width: "20", height: "16", x: "2", y: "4", rx: "2" }
                                         path { d: "m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" }
                                     }
-                                    span { class: "text-sm", "Email" }
+                                    span { style: "font-size: 0.875rem;", "Email" }
                                 }
                             }
 
                             // Start Menu Footer
                             div {
-                                style: "padding: 0.75rem 1rem; background: rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: space-between;",
+                                style: "padding: 0.75rem 1rem; background: rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: space-between; flex-direction: row; margin-top: auto;",
                                 div {
                                     onclick: move |_| {
                                         is_start_open.set(false);
                                         props.on_logout.call(());
                                     },
                                     style: "display: flex; align-items: center; gap: 0.4rem; font-size: 0.7rem; color: rgba(255,255,255,0.5); cursor: pointer; transition: color 0.15s;",
+                                    class: "hover:text-white group",
                                     svg {
                                         xmlns: "http://www.w3.org/2000/svg",
                                         width: "12",
@@ -209,51 +220,52 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
                                         is_reset_open.set(true);
                                     },
                                     style: "font-size: 0.7rem; color: rgba(255,255,255,0.5); cursor: pointer; font-weight: 600; transition: color 0.15s;",
+                                    class: "hover:text-red-400",
                                     "Reset"
                                 }
                             }
                         }
                     }
                 }
-            }
 
-            // Right Side: System Tray & Clock
-            div {
-                class: "flex items-center gap-1 h-full px-2",
-                
-                // Wallpaper Upload Button
-                label {
-                    class: "cursor-pointer p-2 hover:bg-white/10 rounded-md transition-colors flex items-center justify-center",
+                // Pinned Terminal Icon (sticks right of Start Button)
+                div {
+                    class: "w-10 h-10 rounded-md hover:bg-white/10 transition-colors flex items-center justify-center cursor-pointer relative group",
                     svg {
                         xmlns: "http://www.w3.org/2000/svg",
-                        width: "16",
-                        height: "16",
+                        width: "20",
+                        height: "20",
                         view_box: "0 0 24 24",
                         fill: "none",
                         stroke: "currentColor",
                         stroke_width: "2",
                         stroke_linecap: "round",
                         stroke_linejoin: "round",
-                        class: "text-white/70 hover:text-white",
-                        rect { width: "18", height: "18", x: "3", y: "3", rx: "2", ry: "2" }
-                        circle { cx: "9", cy: "9", r: "2" }
-                        path { d: "m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" }
+                        class: "text-blue-400 drop-shadow-[0_0_4px_rgba(96,165,250,0.5)]",
+                        polyline { points: "4 17 10 11 4 5" }
+                        line { x1: "12", y1: "19", x2: "20", y2: "19" }
                     }
-                    input {
-                        id: "wallpaper-upload-input",
-                        type: "file",
-                        class: "hidden",
-                        accept: "image/*",
-                        onchange: handle_wallpaper_change
+                    div {
+                        class: "absolute bottom-0 w-3 h-1 rounded-t-sm bg-blue-400 transition-all duration-300",
                     }
                 }
+            }
 
-                // Theme Dropdown Menu
+            // Right Side: System Tray & Clock
+            div {
+                class: "flex items-center justify-end gap-1 h-full px-2",
+                
+                // Wallpaper Dropdown Menu
                 div {
-                    class: "relative",
+                    class: "relative flex items-center h-full",
                     button {
-                        onclick: move |_| is_theme_open.toggle(),
-                        class: "p-2 hover:bg-white/10 rounded-md transition-colors flex items-center justify-center",
+                        onclick: move |_| {
+                            is_wallpaper_open.toggle();
+                            is_theme_open.set(false);
+                            is_start_open.set(false);
+                        },
+                        style: "background: transparent; border: none; outline: none; cursor: pointer; display: flex; align-items: center; justify-content: center;",
+                        class: "p-2 hover:bg-white/10 rounded-md transition-colors",
                         svg {
                             xmlns: "http://www.w3.org/2000/svg",
                             width: "16",
@@ -265,13 +277,93 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
                             stroke_linecap: "round",
                             stroke_linejoin: "round",
                             class: "text-white/70 hover:text-white",
-                            path { d: "M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 14.7255 3.09032 17.1962 4.85857 19C5.03444 19.1759 5.09914 19.431 5.02102 19.6678C4.78912 20.3705 4.66667 21.171 4.66667 22C4.66667 22 7.5 22 12 22Z" }
+                            rect { width: "18", height: "18", x: "3", y: "3", rx: "2", ry: "2" }
+                            circle { cx: "9", cy: "9", r: "2" }
+                            path { d: "m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" }
+                        }
+                    }
+
+                    if is_wallpaper_open() {
+                        div {
+                            style: "position: absolute; bottom: 44px; right: 0; width: 160px; background-color: rgba(28, 28, 28, 0.95); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 0.5rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); overflow: hidden; padding: 0.25rem 0; display: flex; flex-direction: column; z-index: 100;",
+                            div {
+                                onclick: move |_| {
+                                    let bg_url = props.default_wallpaper.clone();
+                                    wallpaper.set(Some(bg_url.clone()));
+                                    if let Some(win) = web_sys::window() {
+                                        if let Ok(Some(storage)) = win.local_storage() {
+                                            let _ = storage.set_item("terminal-wallpaper", &bg_url);
+                                        }
+                                    }
+                                    is_wallpaper_open.set(false);
+                                },
+                                style: "display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; cursor: pointer; color: #fff; transition: background-color 0.15s; font-size: 0.75rem; text-align: left;",
+                                class: "hover:bg-white/10",
+                                span { "Default (Frieren)" }
+                            }
+                            div {
+                                onclick: move |_| {
+                                    wallpaper.set(None);
+                                    if let Some(win) = web_sys::window() {
+                                        if let Ok(Some(storage)) = win.local_storage() {
+                                            let _ = storage.remove_item("terminal-wallpaper");
+                                        }
+                                    }
+                                    is_wallpaper_open.set(false);
+                                },
+                                style: "display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; cursor: pointer; color: #fff; transition: background-color 0.15s; font-size: 0.75rem; text-align: left;",
+                                class: "hover:bg-white/10",
+                                span { "None (Dark)" }
+                            }
+                            label {
+                                style: "display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; cursor: pointer; color: #fff; transition: background-color 0.15s; font-size: 0.75rem; text-align: left;",
+                                class: "hover:bg-white/10",
+                                span { "Upload Custom..." }
+                                input {
+                                    id: "wallpaper-upload-input",
+                                    type: "file",
+                                    class: "hidden",
+                                    accept: "image/*",
+                                    onchange: handle_wallpaper_change
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Theme Dropdown Menu
+                div {
+                    class: "relative flex items-center h-full",
+                    button {
+                        onclick: move |_| {
+                            is_theme_open.toggle();
+                            is_wallpaper_open.set(false);
+                            is_start_open.set(false);
+                        },
+                        style: "background: transparent; border: none; outline: none; cursor: pointer; display: flex; align-items: center; justify-content: center;",
+                        class: "p-2 hover:bg-white/10 rounded-md transition-colors",
+                        svg {
+                            xmlns: "http://www.w3.org/2000/svg",
+                            width: "16",
+                            height: "16",
+                            view_box: "0 0 24 24",
+                            fill: "none",
+                            stroke: "currentColor",
+                            stroke_width: "2",
+                            stroke_linecap: "round",
+                            stroke_linejoin: "round",
+                            class: "text-white/70 hover:text-white",
+                            circle { cx: "13.5", cy: "6.5", r: ".5", fill: "currentColor" }
+                            circle { cx: "17.5", cy: "10.5", r: ".5", fill: "currentColor" }
+                            circle { cx: "8.5", cy: "7.5", r: ".5", fill: "currentColor" }
+                            circle { cx: "6.5", cy: "12.5", r: ".5", fill: "currentColor" }
+                            path { d: "M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.836-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" }
                         }
                     }
 
                     if is_theme_open() {
                         div {
-                            class: "absolute bottom-[48px] right-0 w-[150px] bg-[#1c1c1c]/95 backdrop-blur-xl border border-white/10 rounded-lg shadow-2xl overflow-hidden py-1 z-50",
+                            style: "position: absolute; bottom: 44px; right: 0; width: 150px; background-color: rgba(28, 28, 28, 0.95); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 0.5rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); overflow: hidden; padding: 0.25rem 0; display: flex; flex-direction: column; z-index: 100;",
                             for theme in THEMES {
                                 div {
                                     key: "{theme.id}",
@@ -284,10 +376,10 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
                                         }
                                         is_theme_open.set(false);
                                     },
-                                    class: "flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-white/10 text-white transition-colors text-xs",
+                                    style: "display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; cursor: pointer; color: #fff; transition: background-color 0.15s; font-size: 0.75rem; text-align: left;",
+                                    class: "hover:bg-white/10",
                                     div {
-                                        class: "w-3 h-3 rounded-full border border-white/20",
-                                        style: "background-color: {theme.color}"
+                                        style: "width: 0.75rem; height: 0.75rem; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); flex-shrink: 0; background-color: {theme.color}"
                                     }
                                     span { "{theme.name}" }
                                 }
@@ -297,7 +389,7 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
                 }
 
                 // Separator
-                div { class: "w-px h-6 bg-white/10 mx-2" }
+                div { class: "w-px h-5 bg-white/10 mx-2" }
 
                 // Clock
                 div {

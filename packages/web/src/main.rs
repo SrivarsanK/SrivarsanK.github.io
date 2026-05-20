@@ -1,3 +1,4 @@
+// Trigger rebuild of UI dependency
 use dioxus::prelude::*;
 use ui::{BootSequence, LoginScreen, Taskbar, DesktopIcons, Terminal};
 
@@ -28,9 +29,13 @@ fn App() -> Element {
         if let Some(win) = web_sys::window() {
             if let Ok(Some(storage)) = win.local_storage() {
                 if let Ok(Some(saved_wallpaper)) = storage.get_item("terminal-wallpaper") {
-                    wallpaper.set(Some(saved_wallpaper));
+                    if saved_wallpaper == "/assets/frieren.jpg" {
+                        wallpaper.set(Some(FRIEREN_BG.to_string()));
+                    } else {
+                        wallpaper.set(Some(saved_wallpaper));
+                    }
                 } else {
-                    // Default wallpaper as asset URL
+                    // Default wallpaper
                     wallpaper.set(Some(FRIEREN_BG.to_string()));
                 }
                 if let Ok(Some(saved_theme)) = storage.get_item("terminal-theme") {
@@ -50,7 +55,7 @@ fn App() -> Element {
     };
 
     let desktop_style = match wallpaper() {
-        Some(w) => format!("background-image: url({}); background-size: cover; background-position: center; background-repeat: no-repeat;", w),
+        Some(w) => format!("background-image: url('{}'); background-size: cover; background-position: center; background-repeat: no-repeat;", w),
         None => "background-color: #000;".to_string(),
     };
 
@@ -86,11 +91,11 @@ fn App() -> Element {
                             div { style: "position: absolute; inset: 0; background: rgba(0,0,0,0.35); z-index: 0;" }
                         }
 
-                        // Terminal — full-viewport positioned layer, z-index 10
+                        // Terminal — full-viewport positioned layer, z-index 30
                         // This MUST be a full-size absolute container so the terminal's own
                         // absolute + transform positioning works relative to the viewport
                         div {
-                            style: "position: absolute; top: 0; left: 0; right: 0; bottom: 40px; z-index: 10; pointer-events: none;",
+                            style: "position: absolute; top: 0; left: 0; right: 0; bottom: 40px; z-index: 30; pointer-events: none;",
                             Terminal {
                                 external_command,
                                 current_theme: current_theme.clone(),
@@ -111,6 +116,7 @@ fn App() -> Element {
                         Taskbar {
                             current_theme,
                             wallpaper,
+                            default_wallpaper: FRIEREN_BG.to_string(),
                             on_logout: move |_| os_state.set(OsState::Login),
                             on_reset: handle_reset
                         }

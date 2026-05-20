@@ -76,7 +76,7 @@ fn DesktopIcon(
     rsx! {
         div {
             style: "transform: translate3d({pos.0}px, {pos.1}px, 0); position: absolute; z-index: {z_index};",
-            class: "flex flex-col items-center w-16 p-1.5 cursor-pointer select-none group rounded-md hover:bg-white/10 transition-colors {drag_opacity}",
+            class: "flex flex-col items-center w-16 p-1.5 cursor-pointer select-none group rounded-md hover:bg-white/10 transition-colors {drag_opacity} pointer-events-auto",
             onpointerdown: handle_down,
             ondoubleclick: move |_| on_double_click.call(command.clone()),
             div {
@@ -127,6 +127,9 @@ pub fn DesktopIcons(props: DesktopIconsProps) -> Element {
         dragging.set(None);
     };
 
+    let is_dragging = dragging.read().is_some();
+    let container_pointer = if is_dragging { "pointer-events-auto" } else { "pointer-events-none" };
+
     rsx! {
         div {
             class: "absolute inset-0 z-0",
@@ -134,7 +137,7 @@ pub fn DesktopIcons(props: DesktopIconsProps) -> Element {
             onpointerup: handle_pointer_up,
             onpointerleave: handle_pointer_up,
             div {
-                class: "relative w-full h-full pointer-events-auto",
+                class: "relative w-full h-full {container_pointer}",
                 for icon in ICONS {
                     DesktopIcon {
                         key: "{icon.command}",
