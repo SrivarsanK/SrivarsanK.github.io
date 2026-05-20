@@ -64,8 +64,24 @@ pub fn Terminal(props: TerminalProps) -> Element {
     let mut is_minimized = use_signal(|| false);
     let mut is_maximized = use_signal(|| false);
     
-    let mut pos = use_signal(|| (100.0, 100.0));
-    let mut size = use_signal(|| (800.0, 500.0));
+    let mut pos = use_signal(|| (100.0_f64, 20.0_f64));
+    let mut size = use_signal(|| (760.0_f64, 460.0_f64));
+
+    // Center terminal on first mount based on actual window size
+    use_effect(move || {
+        if let Some(win) = web_sys::window() {
+            let w = win.inner_width().unwrap_or(wasm_bindgen::JsValue::from(1280))
+                .as_f64().unwrap_or(1280.0);
+            let h = win.inner_height().unwrap_or(wasm_bindgen::JsValue::from(720))
+                .as_f64().unwrap_or(720.0);
+            let term_w = 760.0_f64.min(w - 120.0);
+            let term_h = 460.0_f64.min(h - 100.0);
+            let x = ((w - term_w) / 2.0).max(100.0);
+            let y = ((h - 40.0 - term_h) / 2.0).max(20.0);
+            pos.set((x, y));
+            size.set((term_w, term_h));
+        }
+    });
     
     let mut dragging_header = use_signal(|| None::<(f64, f64)>);
     let mut resizing = use_signal(|| None::<(f64, f64, f64, f64)>); // start_x, start_y, start_w, start_h
@@ -291,13 +307,13 @@ pub fn Terminal(props: TerminalProps) -> Element {
 
     // Theme matching logic
     let theme_val = current_theme.read().clone();
-    let (bg_color, text_color, prompt_color, prompt_text) = match theme_val.as_str() {
-        "powershell" => ("#012456", "#ffffff", "#00ff00", "PS Guest@Portfolio> "),
-        "ubuntu" => ("#300a24", "#ffffff", "#8ae234", "guest@portfolio:~$ "),
-        "matrix" => ("#000000", "#00ff00", "#00ff00", "guest@matrix:~$ "),
-        "retro" => ("#2d2d2d", "#ffb000", "#ffb000", "C:\\> "),
-        "dracula" => ("#282a36", "#f8f8f2", "#50fa7b", "guest@dracula:~$ "),
-        _ => ("#012456", "#ffffff", "#00ff00", "guest@portfolio:~$ "),
+    let (bg_color, text_color, prompt_color, prompt_text, border_color) = match theme_val.as_str() {
+        "powershell" => ("#012456", "#ffffff", "#00ff00", "PS Guest@Portfolio> ", "#1a3a6e"),
+        "ubuntu"     => ("#300a24", "#ffffff", "#8ae234", "guest@portfolio:~$ ", "#6a1a4a"),
+        "matrix"     => ("#000000", "#00ff00", "#00ff00", "guest@matrix:~$ ",    "#003300"),
+        "retro"      => ("#2d2d2d", "#ffb000", "#ffb000", "C:\\> ",               "#555500"),
+        "dracula"    => ("#282a36", "#f8f8f2", "#50fa7b", "guest@dracula:~$ ",   "#44475a"),
+        _            => ("#012456", "#ffffff", "#00ff00", "guest@portfolio:~$ ",  "#1a3a6e"),
     };
 
     let handle_key_down = move |e: Event<KeyboardData>| {
@@ -357,10 +373,10 @@ pub fn Terminal(props: TerminalProps) -> Element {
     if is_minimized() {
         return rsx! {
             div {
-                class: "fixed bottom-[40px] right-4 bg-secondary border border-border rounded-t-lg px-4 py-2 cursor-pointer shadow-lg animate-fade-in flex items-center gap-2 z-[60]",
+                style: "position: fixed; bottom: 48px; right: 1rem; background-color: {bg_color}; border: 1px solid {border_color}; border-radius: 0.5rem 0.5rem 0 0; padding: 0.4rem 1rem; cursor: pointer; box-shadow: 0 -4px 20px rgba(0,0,0,0.4); display: flex; align-items: center; gap: 0.5rem; z-index: 60;",
                 onclick: move |_| is_minimized.set(false),
-                div { class: "w-2 h-2 rounded-full bg-terminal-green animate-pulse" }
-                span { class: "text-xs font-mono", "Terminal (Guest@Portfolio)" }
+                div { style: "width: 0.5rem; height: 0.5rem; border-radius: 9999px; background-color: {prompt_color}; animation: pulse 2s cubic-bezier(0.4,0,0.6,1) infinite;" }
+                span { style: "font-size: 0.75rem; font-family: monospace; color: {text_color};", "Terminal ─ Guest@Portfolio" }
             }
         };
     }
@@ -371,18 +387,18 @@ pub fn Terminal(props: TerminalProps) -> Element {
     let pos_style = if is_maximized() { "fixed" } else { "absolute" };
     let z_index = if is_maximized() { 50 } else { 40 };
     let drag_class = if dragging_header().is_some() || resizing().is_some() { "select-none" } else { "transition-all duration-200" };
+    let user_select_style = if dragging_header().is_some() || resizing().is_some() { "user-select: none;" } else { "" };
 
     rsx! {
         div {
-            style: "transform: {transform}; width: {width_style}; height: {height_style}; position: {pos_style}; top: 0; left: 0; z-index: {z_index};",
-            class: "bg-card border border-border rounded-lg overflow-hidden shadow-2xl flex flex-col pointer-events-auto {drag_class}",
+            style: "transform: {transform}; width: {width_style}; height: {height_style}; position: {pos_style}; top: 0; left: 0; z-index: {z_index}; border: 1px solid {border_color}; border-radius: 0.5rem; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 0 1px {border_color}; display: flex; flex-direction: column; pointer-events: auto; {user_select_style} {drag_class}",
             onpointermove: handle_pointer_move,
             onpointerup: handle_pointer_up,
             onpointerleave: handle_pointer_up,
             
-            // Header
+            // Header — themed titlebar
             div {
-                class: "flex items-center justify-between px-4 py-2 bg-secondary border-b border-border cursor-move select-none",
+                style: "background-color: {border_color}; border-bottom: 1px solid {border_color}; padding: 0.4rem 0.75rem; display: flex; align-items: center; justify-content: space-between; cursor: move; user-select: none; flex-shrink: 0;",
                 onpointerdown: move |e| {
                     if !is_maximized() {
                         dragging_header.set(Some((
@@ -391,19 +407,20 @@ pub fn Terminal(props: TerminalProps) -> Element {
                         )));
                     }
                 },
-                div { class: "flex items-center gap-2", span { class: "text-xs text-muted-foreground font-mono", "Guest@Portfolio:~" } }
-                div { class: "flex items-center terminal-header-buttons",
-                    button { class: "p-2 hover:bg-white/10 transition-colors", onclick: move |e| { e.stop_propagation(); is_minimized.set(true); },
-                        svg { xmlns: "http://www.w3.org/2000/svg", width: "14", height: "14", view_box: "0 0 24 24", fill: "none", stroke: "currentColor", stroke_width: "2", stroke_linecap: "round", stroke_linejoin: "round", path { d: "M5 12h14" } }
+                div {
+                    style: "display: flex; align-items: center; gap: 0.5rem;",
+                    // Traffic lights
+                    div { style: "width: 12px; height: 12px; border-radius: 50%; background: #ff5f57; cursor: pointer;",
+                        onclick: move |e| { e.stop_propagation(); is_minimized.set(true); }
                     }
-                    button { class: "p-2 hover:bg-white/10 transition-colors", onclick: move |e| { e.stop_propagation(); is_maximized.set(!is_maximized()); },
-                        if is_maximized() {
-                            svg { xmlns: "http://www.w3.org/2000/svg", width: "14", height: "14", view_box: "0 0 24 24", fill: "none", stroke: "currentColor", stroke_width: "2", stroke_linecap: "round", stroke_linejoin: "round", path { d: "M8 8H20V20H8z" }, path { d: "M4 16V4H16" } }
-                        } else {
-                            svg { xmlns: "http://www.w3.org/2000/svg", width: "14", height: "14", view_box: "0 0 24 24", fill: "none", stroke: "currentColor", stroke_width: "2", stroke_linecap: "round", stroke_linejoin: "round", rect { x: "3", y: "3", width: "18", height: "18", rx: "2", ry: "2" } }
-                        }
+                    div { style: "width: 12px; height: 12px; border-radius: 50%; background: #febc2e; cursor: pointer;",
+                        onclick: move |e| { e.stop_propagation(); is_maximized.set(!is_maximized()); }
+                    }
+                    div { style: "width: 12px; height: 12px; border-radius: 50%; background: #28c840;"
                     }
                 }
+                span { style: "font-size: 0.7rem; font-family: monospace; color: {text_color}; opacity: 0.8; flex: 1; text-align: center;", "Terminal — Guest@Portfolio:~" }
+                div { style: "width: 3rem;" } // spacer to center title
             }
 
             // Body
@@ -446,16 +463,15 @@ pub fn Terminal(props: TerminalProps) -> Element {
 
                 // Input Line
                 div {
-                    class: "flex items-center mt-2",
-                    span { style: "color: {prompt_color};", class: "mr-2", "{prompt_text}" }
+                    style: "display: flex; align-items: center; margin-top: 0.5rem;",
+                    span { style: "color: {prompt_color}; margin-right: 0.5rem; flex-shrink: 0;", "{prompt_text}" }
                     input {
                         id: "terminal-input",
                         r#type: "text",
                         value: "{current_input()}",
                         oninput: move |e| current_input.set(e.value()),
                         onkeydown: handle_key_down,
-                        class: "flex-1 bg-transparent outline-none",
-                        style: "color: {text_color};",
+                        style: "flex: 1; background: transparent; outline: none; border: none; color: {text_color}; font-family: monospace; font-size: 0.875rem;",
                         autofocus: true,
                         spellcheck: false,
                         autocomplete: "off",
@@ -465,17 +481,17 @@ pub fn Terminal(props: TerminalProps) -> Element {
 
             // Footer
             div {
-                class: "px-4 py-2 bg-secondary border-t border-border text-xs text-muted-foreground flex justify-between select-none relative",
+                style: "background-color: {border_color}; border-top: 1px solid {border_color}; padding: 0.25rem 1rem; font-size: 0.65rem; font-family: monospace; color: {text_color}; opacity: 0.7; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; position: relative;",
                 span { "Type 'help' for commands" }
-                div { class: "flex items-center gap-4",
-                    span { "↑↓ History • Tab Autocomplete" }
+                div { style: "display: flex; align-items: center; gap: 1rem;",
+                    span { "↑↓ History" }
                     if !is_maximized() {
                         div {
-                            class: "cursor-nwse-resize p-1 hover:text-foreground transition-colors absolute right-0 bottom-0 z-50",
+                            style: "cursor: nwse-resize; position: absolute; right: 0; bottom: 0; padding: 0.25rem; z-index: 50;",
                             onpointerdown: move |e| {
                                 resizing.set(Some((e.client_coordinates().x, e.client_coordinates().y, size().0, size().1)));
                             },
-                            div { class: "w-3 h-3 border-r-2 border-b-2 border-muted-foreground/50 m-1" }
+                            div { style: "width: 0.75rem; height: 0.75rem; border-right: 2px solid {text_color}; border-bottom: 2px solid {text_color}; opacity: 0.5; margin: 0.25rem;" }
                         }
                     }
                 }

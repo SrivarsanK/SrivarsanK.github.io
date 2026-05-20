@@ -3,6 +3,7 @@ use ui::{BootSequence, LoginScreen, Taskbar, DesktopIcons, Terminal};
 
 const FAVICON: Asset = asset!("/assets/favicon.ico");
 const MAIN_CSS: Asset = asset!("/assets/main.css");
+const FRIEREN_BG: Asset = asset!("/assets/frieren.jpg");
 
 fn main() {
     dioxus::launch(App);
@@ -29,7 +30,8 @@ fn App() -> Element {
                 if let Ok(Some(saved_wallpaper)) = storage.get_item("terminal-wallpaper") {
                     wallpaper.set(Some(saved_wallpaper));
                 } else {
-                    wallpaper.set(Some("/frieren.jpg".to_string()));
+                    // Default wallpaper as asset URL
+                    wallpaper.set(Some(FRIEREN_BG.to_string()));
                 }
                 if let Ok(Some(saved_theme)) = storage.get_item("terminal-theme") {
                     current_theme.set(saved_theme);
@@ -76,26 +78,29 @@ fn App() -> Element {
             OsState::Desktop => {
                 rsx! {
                     div {
-                        class: "h-screen text-foreground relative overflow-hidden animate-in fade-in duration-1000",
+                        class: "h-screen text-foreground relative overflow-hidden",
                         style: "{desktop_style}",
                         
                         // Background Overlay if wallpaper is set
                         if wallpaper().is_some() {
-                            div { class: "absolute inset-0 bg-black/40 z-0" }
+                            div { class: "absolute inset-0 bg-black/40", style: "z-index: 0;" }
                         }
 
-                        // Desktop Icons Layer
-                        DesktopIcons {
-                            on_icon_click: move |cmd: String| {
-                                external_command.set(Some(cmd));
+                        // Desktop Icons Layer — sits on top, z-index: 20
+                        div {
+                            style: "position: absolute; top: 0; left: 0; right: 0; bottom: 40px; z-index: 20;",
+                            DesktopIcons {
+                                on_icon_click: move |cmd: String| {
+                                    external_command.set(Some(cmd));
+                                }
                             }
                         }
 
-                        // Main Desktop Content
-                        main {
-                            class: "h-[calc(100vh-40px)] relative flex items-center justify-center p-4 overflow-hidden z-10 pointer-events-none",
+                        // Terminal Layer — z-index: 10, fills space above taskbar
+                        div {
+                            style: "position: absolute; top: 0; left: 0; right: 0; bottom: 40px; z-index: 10; display: flex; align-items: center; justify-content: center; padding: 1rem; pointer-events: none;",
                             div {
-                                class: "w-full max-w-4xl h-full flex items-center justify-center pointer-events-auto",
+                                style: "width: 100%; max-width: 56rem; height: 100%; display: flex; align-items: center; justify-content: center; pointer-events: auto;",
                                 Terminal {
                                     external_command,
                                     current_theme: current_theme.clone(),
@@ -103,7 +108,7 @@ fn App() -> Element {
                             }
                         }
 
-                        // Bottom Taskbar
+                        // Bottom Taskbar — fixed at bottom, z-index: 50
                         Taskbar {
                             current_theme,
                             wallpaper,
