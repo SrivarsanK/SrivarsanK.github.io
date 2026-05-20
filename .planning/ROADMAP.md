@@ -25,7 +25,7 @@ We are building a highly interactive, simulated OS and terminal experience as a 
 **Plans**: TBD
 
 Plans:
-- [ ] 01-01: TBD
+- [x] 01-01: Foundation workspace and global CSS
 
 ### Phase 2: Boot & Login
 **Goal**: Create the initial user onboarding flow with a boot animation and lock screen.
@@ -100,7 +100,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/TBD | Not started | - |
+| 1. Foundation | 1/1 | Complete | 2026-05-20 |
 | 2. Boot & Login | 0/TBD | Not started | - |
 | 3. Taskbar | 0/TBD | Not started | - |
 | 4. Desktop Environment | 0/TBD | Not started | - |
