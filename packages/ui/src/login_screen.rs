@@ -32,101 +32,110 @@ pub fn LoginScreen(props: LoginScreenProps) -> Element {
     };
 
     let time_val = time();
-    let time_str = time_val.format("%H:%M").to_string();
-    let date_str = time_val.format("%A, %B %-d").to_string();
+    // 12-hour format: "12:19 am"
+    let time_str = time_val.format("%-I:%M %P").to_string();
+    // "Thursday, 21 May"
+    let date_str = time_val.format("%A, %-d %B").to_string();
 
     let bg_style = match &props.wallpaper {
-        Some(w) => format!("background-image: url({}); background-size: cover; background-position: center;", w),
-        None => "background-color: #000;".to_string(),
+        Some(w) => format!(
+            "background-image: url({}); background-size: cover; background-position: center;",
+            w
+        ),
+        None => "background-color: #1a1a2e;".to_string(),
     };
 
     rsx! {
         div {
-            class: "fixed inset-0 z-[40] flex items-center justify-center overflow-hidden",
-            style: "{bg_style}",
-            
-            // Background Overlay
-            div { class: "absolute inset-0 bg-black/30 backdrop-blur-[2px]" }
+            style: "position: fixed; inset: 0; z-index: 40; overflow: hidden; {bg_style}",
 
-            // Clock Area
+            // Very subtle backdrop blur to slightly soften the wallpaper
             div {
-                class: "absolute bottom-12 left-12 text-white animate-in fade-in slide-in-from-bottom-8 duration-1000",
+                style: "position: absolute; inset: 0; background: rgba(0,0,0,0.18); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);"
+            }
+
+            // ── CLOCK — large, bottom-left ──
+            div {
+                style: "position: absolute; bottom: 2.5rem; left: 2.5rem; color: #fff; z-index: 10;",
                 div {
-                    class: "text-7xl font-light mb-2",
+                    style: "font-size: 4.5rem; font-weight: 300; font-family: 'JetBrains Mono', monospace; line-height: 1; letter-spacing: -1px; text-shadow: 0 2px 20px rgba(0,0,0,0.5);",
                     "{time_str}"
                 }
                 div {
-                    class: "text-xl font-medium opacity-80",
+                    style: "font-size: 1rem; font-weight: 400; opacity: 0.85; margin-top: 0.35rem; font-family: 'Inter', sans-serif; text-shadow: 0 1px 8px rgba(0,0,0,0.4);",
                     "{date_str}"
                 }
             }
 
-            // Login Card
+            // ── WIFI + LANGUAGE — bottom-right ──
             div {
-                class: "relative z-10 flex flex-col items-center animate-in zoom-in-95 duration-500",
+                style: "position: absolute; bottom: 1.75rem; right: 1.75rem; display: flex; align-items: center; gap: 0.75rem; z-index: 10; color: rgba(255,255,255,0.75);",
+
+                // WiFi icon (SVG)
                 div {
-                    class: "w-48 h-48 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center mb-6 overflow-hidden",
-                    div {
-                        class: "w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500/50 to-purple-500/50",
-                        span {
-                            class: "text-7xl font-bold text-white tracking-tighter shadow-xl",
-                            "R"
-                        }
+                    style: "display: flex; align-items: center; gap: 0.25rem; font-size: 0.65rem; cursor: pointer; opacity: 0.8; transition: opacity 0.2s;",
+                    title: "WiFi",
+                    svg {
+                        xmlns: "http://www.w3.org/2000/svg",
+                        width: "18",
+                        height: "18",
+                        view_box: "0 0 24 24",
+                        fill: "none",
+                        stroke: "white",
+                        stroke_width: "2",
+                        stroke_linecap: "round",
+                        stroke_linejoin: "round",
+                        path { d: "M5 12.55a11 11 0 0 1 14.08 0" }
+                        path { d: "M1.42 9a16 16 0 0 1 21.16 0" }
+                        path { d: "M8.53 16.11a6 6 0 0 1 6.95 0" }
+                        circle { cx: "12", cy: "20", r: "1", fill: "white" }
                     }
                 }
-                
+
+                // Language / keyboard
+                div {
+                    style: "font-size: 0.7rem; font-family: monospace; color: rgba(255,255,255,0.75); cursor: pointer; letter-spacing: 0.05em;",
+                    "EN"
+                }
+            }
+
+            // ── LOGIN CARD — centered ──
+            div {
+                style: "position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10;",
+
+                // Avatar circle
+                div {
+                    style: "width: 6rem; height: 6rem; border-radius: 50%; background: linear-gradient(135deg, #6e6aca 0%, #8b5cf6 50%, #a78bfa 100%); display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.15);",
+                    span {
+                        style: "font-size: 2.5rem; font-weight: 700; color: #fff; font-family: 'Inter', sans-serif; text-shadow: 0 2px 8px rgba(0,0,0,0.3);",
+                        "R"
+                    }
+                }
+
+                // Username
                 h1 {
-                    class: "text-3xl font-semibold text-white mb-2 drop-shadow-lg",
+                    style: "font-size: 1.4rem; font-weight: 600; color: #fff; margin: 0 0 0.75rem 0; text-shadow: 0 2px 12px rgba(0,0,0,0.5); font-family: 'Inter', sans-serif;",
                     "Ren"
                 }
 
+                // Login button / spinner
                 if is_logging_in() {
                     div {
-                        class: "flex flex-col items-center gap-4 mt-4",
-                        div { class: "w-8 h-8 border-4 border-white/30 border-t-white rounded-full animate-spin" }
+                        style: "display: flex; flex-direction: column; align-items: center; gap: 0.75rem; margin-top: 0.5rem;",
+                        div {
+                            style: "width: 1.5rem; height: 1.5rem; border: 3px solid rgba(255,255,255,0.25); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite;"
+                        }
                         span {
-                            class: "text-white/80 text-sm font-medium animate-pulse",
+                            style: "color: rgba(255,255,255,0.7); font-size: 0.8rem; font-family: monospace; animation: pulse 2s infinite;",
                             "Logging in..."
                         }
                     }
                 } else {
                     button {
                         onclick: handle_login,
-                        class: "group mt-4 flex items-center gap-3 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 px-8 py-3 rounded-md transition-all duration-300 transform hover:scale-105",
-                        span {
-                            class: "text-white font-medium",
-                            "Login"
-                        }
-                        // Inline SVG for Login Icon
-                        svg {
-                            xmlns: "http://www.w3.org/2000/svg",
-                            width: "20",
-                            height: "20",
-                            view_box: "0 0 24 24",
-                            fill: "none",
-                            stroke: "currentColor",
-                            stroke_width: "2",
-                            stroke_linecap: "round",
-                            stroke_linejoin: "round",
-                            class: "text-white group-hover:translate-x-1 transition-transform",
-                            path { d: "M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" }
-                            polyline { points: "10 17 15 12 10 7" }
-                            line { x1: "15", y1: "12", x2: "3", y2: "12" }
-                        }
+                        style: "display: flex; align-items: center; gap: 0.4rem; padding: 0.35rem 1.1rem; font-size: 0.78rem; font-family: monospace; color: rgba(255,255,255,0.9); background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); border-radius: 0.3rem; cursor: pointer; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: background 0.2s, transform 0.1s; letter-spacing: 0.03em;",
+                        "Login →"
                     }
-                }
-            }
-
-            // Shutdown/Power buttons (Visual only)
-            div {
-                class: "absolute bottom-8 right-8 flex items-center gap-4 opacity-70",
-                div {
-                    class: "w-6 h-6 border border-white/20 rounded flex items-center justify-center text-white text-[10px]",
-                    "Wi-Fi"
-                }
-                div {
-                    class: "w-6 h-6 border border-white/20 rounded flex items-center justify-center text-white text-[10px]",
-                    "EN"
                 }
             }
         }
