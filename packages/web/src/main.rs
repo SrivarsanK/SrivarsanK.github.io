@@ -98,6 +98,7 @@ fn App() -> Element {
                                 class: "w-full max-w-4xl h-full flex items-center justify-center pointer-events-auto",
                                 Terminal {
                                     external_command,
+                                    current_theme: current_theme.clone(),
                                 }
                             }
                         }

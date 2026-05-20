@@ -1,5 +1,6 @@
 use dioxus::prelude::*;
 use serde::Deserialize;
+use wasm_bindgen::JsCast;
 
 #[derive(Clone)]
 enum LineType {
@@ -21,6 +22,7 @@ struct TerminalLine {
 #[derive(Props, Clone, PartialEq)]
 pub struct TerminalProps {
     pub external_command: Signal<Option<String>>,
+    pub current_theme: Signal<String>,
 }
 
 #[derive(Deserialize)]
@@ -45,6 +47,7 @@ Type 'help' to see available commands."#;
 #[component]
 pub fn Terminal(props: TerminalProps) -> Element {
     let mut external_cmd = props.external_command;
+    let current_theme = props.current_theme;
     let mut lines = use_signal(|| vec![
         TerminalLine {
             id: 0,
@@ -274,6 +277,29 @@ pub fn Terminal(props: TerminalProps) -> Element {
         }
     });
 
+    // Auto-scroll logic
+    use_effect(move || {
+        let _ = lines.read().len();
+        if let Some(win) = web_sys::window() {
+            if let Some(doc) = win.document() {
+                if let Some(el) = doc.get_element_by_id("terminal-body") {
+                    el.set_scroll_top(el.scroll_height());
+                }
+            }
+        }
+    });
+
+    // Theme matching logic
+    let theme_val = current_theme.read().clone();
+    let (bg_color, text_color, prompt_color, prompt_text) = match theme_val.as_str() {
+        "powershell" => ("#012456", "#ffffff", "#00ff00", "PS Guest@Portfolio> "),
+        "ubuntu" => ("#300a24", "#ffffff", "#8ae234", "guest@portfolio:~$ "),
+        "matrix" => ("#000000", "#00ff00", "#00ff00", "guest@matrix:~$ "),
+        "retro" => ("#2d2d2d", "#ffb000", "#ffb000", "C:\\> "),
+        "dracula" => ("#282a36", "#f8f8f2", "#50fa7b", "guest@dracula:~$ "),
+        _ => ("#012456", "#ffffff", "#00ff00", "guest@portfolio:~$ "),
+    };
+
     let handle_key_down = move |e: Event<KeyboardData>| {
         match e.key() {
             Key::Enter => {
@@ -382,7 +408,20 @@ pub fn Terminal(props: TerminalProps) -> Element {
 
             // Body
             div {
+                id: "terminal-body",
+                style: "background-color: {bg_color}; color: {text_color};",
                 class: "flex-1 overflow-y-auto p-4 font-mono text-sm leading-relaxed terminal-scrollbar min-h-0",
+                onclick: move |_| {
+                    if let Some(win) = web_sys::window() {
+                        if let Some(doc) = win.document() {
+                            if let Some(input) = doc.get_element_by_id("terminal-input") {
+                                if let Ok(html_input) = input.dyn_into::<web_sys::HtmlInputElement>() {
+                                    let _ = html_input.focus();
+                                }
+                            }
+                        }
+                    }
+                },
                 for line in lines() {
                     div { key: "{line.id}",
                         class: match &line.line_type {
@@ -393,7 +432,7 @@ pub fn Terminal(props: TerminalProps) -> Element {
                         },
                         match &line.line_type {
                             LineType::Input => {
-                                rsx! { div { class: "flex", span { class: "text-terminal-green mr-2", "ren@portfolio:~$ " } span { "{line.content}" } } }
+                                rsx! { div { class: "flex", span { style: "color: {prompt_color};", class: "mr-2", "{prompt_text}" } span { "{line.content}" } } }
                             }
                             LineType::Component(elem) => {
                                 rsx! { div { class: "animate-fade-in", {elem.clone()} } }
@@ -408,13 +447,15 @@ pub fn Terminal(props: TerminalProps) -> Element {
                 // Input Line
                 div {
                     class: "flex items-center mt-2",
-                    span { class: "text-terminal-green mr-2", "ren@portfolio:~$ " }
+                    span { style: "color: {prompt_color};", class: "mr-2", "{prompt_text}" }
                     input {
+                        id: "terminal-input",
                         r#type: "text",
                         value: "{current_input()}",
                         oninput: move |e| current_input.set(e.value()),
                         onkeydown: handle_key_down,
-                        class: "flex-1 bg-transparent outline-none text-foreground",
+                        class: "flex-1 bg-transparent outline-none",
+                        style: "color: {text_color};",
                         autofocus: true,
                         spellcheck: false,
                         autocomplete: "off",
