@@ -57,13 +57,21 @@ fn DesktopIcon(
     label: String,
     command: String,
     pos: (i32, i32),
+    index: usize,
     is_dragging: bool,
+    is_bouncing: bool,
     svg_path: String,
     on_pointer_down: EventHandler<(f64, f64)>,
     on_double_click: EventHandler<String>,
 ) -> Element {
     let z_index = if is_dragging { 20 } else { 10 };
-    let drag_opacity = if is_dragging { "opacity-70" } else { "" };
+    let drag_class = if is_dragging { "opacity-70" } else { "" };
+    
+    // Staggered entrance animation
+    let entrance_delay = format!("animation-delay: {}ms;", index * 100 + 200);
+    
+    // Bounce class on double-click
+    let bounce_class = if is_bouncing { "icon-bounce" } else { "" };
     
     let handle_down = move |e: Event<PointerData>| {
         let offset = (
@@ -76,26 +84,31 @@ fn DesktopIcon(
     rsx! {
         div {
             style: "transform: translate3d({pos.0}px, {pos.1}px, 0); position: absolute; z-index: {z_index};",
-            class: "flex flex-col items-center w-16 p-1.5 cursor-pointer select-none group rounded-md hover:bg-white/10 transition-colors {drag_opacity} pointer-events-auto",
+            class: "flex flex-col items-center w-16 p-1.5 cursor-pointer select-none group rounded-md hover:bg-white/10 transition-colors duration-200 {drag_class} pointer-events-auto",
             onpointerdown: handle_down,
             ondoubleclick: move |_| on_double_click.call(command.clone()),
             div {
-                class: "w-10 h-10 flex items-center justify-center bg-blue-500/20 rounded-lg border border-blue-400/30 group-hover:bg-blue-500/30 group-hover:border-blue-400/50 backdrop-blur-sm transition-all shadow-lg pointer-events-none",
-                svg {
-                    xmlns: "http://www.w3.org/2000/svg",
-                    view_box: "0 0 24 24",
-                    fill: "none",
-                    stroke: "currentColor",
-                    stroke_width: "2",
-                    stroke_linecap: "round",
-                    stroke_linejoin: "round",
-                    class: "w-6 h-6 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]",
-                    path { d: "{svg_path}" }
+                class: "flex flex-col items-center w-full icon-entrance {bounce_class}",
+                style: "{entrance_delay}",
+                div {
+                    class: "w-10 h-10 flex items-center justify-center bg-blue-500/20 rounded-lg border border-blue-400/30 group-hover:bg-blue-500/30 group-hover:border-blue-400/50 backdrop-blur-sm transition-smooth shadow-lg pointer-events-none",
+                    style: "transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1), background-color 200ms ease, border-color 200ms ease;",
+                    svg {
+                        xmlns: "http://www.w3.org/2000/svg",
+                        view_box: "0 0 24 24",
+                        fill: "none",
+                        stroke: "currentColor",
+                        stroke_width: "2",
+                        stroke_linecap: "round",
+                        stroke_linejoin: "round",
+                        class: "w-6 h-6 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]",
+                        path { d: "{svg_path}" }
+                    }
                 }
-            }
-            span {
-                class: "mt-1 text-[10px] font-medium text-white text-center drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] px-1 py-0.5 rounded leading-tight pointer-events-none",
-                "{label}"
+                span {
+                    class: "mt-1 text-[10px] font-medium text-white text-center drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] px-1 py-0.5 rounded leading-tight pointer-events-none",
+                    "{label}"
+                }
             }
         }
     }
@@ -112,6 +125,7 @@ pub fn DesktopIcons(props: DesktopIconsProps) -> Element {
     });
 
     let mut dragging = use_signal(|| None::<(String, (f64, f64))>);
+    let mut bouncing_icon = use_signal(|| None::<String>);
 
     let handle_pointer_move = move |e: Event<PointerData>| {
         if let Some((cmd, offset)) = dragging.read().as_ref() {
@@ -138,18 +152,29 @@ pub fn DesktopIcons(props: DesktopIconsProps) -> Element {
             onpointerleave: handle_pointer_up,
             div {
                 class: "relative w-full h-full {container_pointer}",
-                for icon in ICONS {
+                for (idx, icon) in ICONS.iter().enumerate() {
                     DesktopIcon {
                         key: "{icon.command}",
                         label: icon.label.to_string(),
                         command: icon.command.to_string(),
                         pos: *positions.read().get(icon.command).unwrap_or(&icon.initial_pos),
+                        index: idx,
                         is_dragging: dragging.read().as_ref().map(|(c, _)| c == icon.command).unwrap_or(false),
+                        is_bouncing: bouncing_icon.read().as_ref().map(|c| c == icon.command).unwrap_or(false),
                         svg_path: icon.svg_path.to_string(),
                         on_pointer_down: move |offset| {
                             dragging.set(Some((icon.command.to_string(), offset)));
                         },
-                        on_double_click: move |cmd| props.on_icon_click.call(cmd)
+                        on_double_click: move |cmd: String| {
+                            let cmd_clone = cmd.clone();
+                            bouncing_icon.set(Some(cmd.clone()));
+                            // Clear bounce after animation completes
+                            spawn(async move {
+                                gloo_timers::future::sleep(std::time::Duration::from_millis(350)).await;
+                                bouncing_icon.set(None);
+                            });
+                            props.on_icon_click.call(cmd_clone);
+                        }
                     }
                 }
             }

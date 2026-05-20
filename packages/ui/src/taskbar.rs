@@ -9,6 +9,7 @@ pub struct TaskbarProps {
     current_theme: Signal<String>,
     wallpaper: Signal<Option<String>>,
     default_wallpaper: String,
+    is_minimized: Signal<bool>,
     on_logout: EventHandler<()>,
     on_reset: EventHandler<()>,
 }
@@ -34,6 +35,7 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
     let mut is_wallpaper_open = use_signal(|| false);
     let mut is_reset_open = use_signal(|| false);
     let mut time = use_signal(|| Local::now());
+    let mut is_minimized = props.is_minimized;
 
     // Clock update loop
     use_coroutine(move |_: UnboundedReceiver<()>| async move {
@@ -95,7 +97,7 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
                     button {
                         onclick: move |_| is_start_open.toggle(),
                         style: "background: transparent; border: none; padding: 0; outline: none; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 48px; height: 40px; transition: background-color 0.2s;",
-                        class: if is_start_open() { "bg-white/20" } else { "hover:bg-white/10" },
+                        class: if is_start_open() { "bg-white/20 btn-press" } else { "hover:bg-white/10 btn-press" },
                         svg {
                             xmlns: "http://www.w3.org/2000/svg",
                             width: "20",
@@ -116,6 +118,7 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
                     // Start Menu Popup
                     if is_start_open() {
                         div {
+                            class: "menu-slide-up",
                             style: "position: absolute; bottom: 44px; left: 0; width: 300px; background-color: rgba(28, 28, 28, 0.95); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 0.5rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); overflow: hidden; display: flex; flex-direction: column; z-index: 100;",
                             
                             // User Info Card
@@ -147,7 +150,7 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
                                     href: "https://github.com",
                                     target: "_blank",
                                     rel: "noopener noreferrer",
-                                    style: "display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 0.375rem; transition: background-color 0.15s; text-decoration: none;",
+                                    style: "display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 0.375rem; transition: background-color 0.15s; text-decoration: none; color: #fff;",
                                     class: "hover:bg-white/10 text-white/80 hover:text-white group",
                                     svg {
                                         xmlns: "http://www.w3.org/2000/svg",
@@ -168,7 +171,7 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
 
                                 a {
                                     href: "mailto:hello@developer.dev",
-                                    style: "display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 0.375rem; transition: background-color 0.15s; text-decoration: none;",
+                                    style: "display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 0.375rem; transition: background-color 0.15s; text-decoration: none; color: #fff;",
                                     class: "hover:bg-white/10 text-white/80 hover:text-white group",
                                     svg {
                                         xmlns: "http://www.w3.org/2000/svg",
@@ -231,6 +234,7 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
                 // Pinned Terminal Icon (sticks right of Start Button)
                 div {
                     class: "w-10 h-10 rounded-md hover:bg-white/10 transition-colors flex items-center justify-center cursor-pointer relative group",
+                    onclick: move |_| is_minimized.toggle(),
                     svg {
                         xmlns: "http://www.w3.org/2000/svg",
                         width: "20",
@@ -285,6 +289,7 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
 
                     if is_wallpaper_open() {
                         div {
+                            class: "menu-slide-up",
                             style: "position: absolute; bottom: 44px; right: 0; width: 160px; background-color: rgba(28, 28, 28, 0.95); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 0.5rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); overflow: hidden; padding: 0.25rem 0; display: flex; flex-direction: column; z-index: 100;",
                             div {
                                 onclick: move |_| {
@@ -363,6 +368,7 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
 
                     if is_theme_open() {
                         div {
+                            class: "menu-slide-up",
                             style: "position: absolute; bottom: 44px; right: 0; width: 150px; background-color: rgba(28, 28, 28, 0.95); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 0.5rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); overflow: hidden; padding: 0.25rem 0; display: flex; flex-direction: column; z-index: 100;",
                             for theme in THEMES {
                                 div {
@@ -403,9 +409,9 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
         // Reset Confirmation Dialog
         if is_reset_open() {
             div {
-                class: "fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm",
+                class: "fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm backdrop-fade-in",
                 div {
-                    class: "bg-[#1c1c1c]/95 border border-white/10 text-white rounded-lg p-6 max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-200 mx-4",
+                    class: "bg-[#1c1c1c]/95 border border-white/10 text-white rounded-lg p-6 max-w-md w-full shadow-2xl menu-slide-up mx-4",
                     h2 { class: "text-lg font-bold mb-2", "Are you absolutely sure?" }
                     p {
                         class: "text-sm text-white/60 mb-6 leading-relaxed",

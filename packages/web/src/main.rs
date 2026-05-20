@@ -1,4 +1,4 @@
-// Trigger rebuild of UI dependency
+// Trigger rebuild for login screen updates
 use dioxus::prelude::*;
 use ui::{BootSequence, LoginScreen, Taskbar, DesktopIcons, Terminal};
 
@@ -23,6 +23,7 @@ fn App() -> Element {
     let mut current_theme = use_signal(|| "powershell".to_string());
     let mut wallpaper = use_signal(|| None::<String>);
     let mut external_command = use_signal(|| None::<String>);
+    let mut is_minimized = use_signal(|| false);
 
     // Load saved preferences on client-side mount
     use_effect(move || {
@@ -83,7 +84,7 @@ fn App() -> Element {
             OsState::Desktop => {
                 rsx! {
                     div {
-                        class: "h-screen text-foreground relative overflow-hidden",
+                        class: "h-screen text-foreground relative overflow-hidden desktop-enter",
                         style: "{desktop_style}",
                         
                         // Background Overlay
@@ -99,6 +100,7 @@ fn App() -> Element {
                             Terminal {
                                 external_command,
                                 current_theme: current_theme.clone(),
+                                is_minimized,
                             }
                         }
 
@@ -117,6 +119,7 @@ fn App() -> Element {
                             current_theme,
                             wallpaper,
                             default_wallpaper: FRIEREN_BG.to_string(),
+                            is_minimized,
                             on_logout: move |_| os_state.set(OsState::Login),
                             on_reset: handle_reset
                         }

@@ -71,49 +71,341 @@ body {
 .bg-secondary { background-color: var(--secondary); }
 .border-border { border-color: var(--border); }
 
-/* ---- ANIMATIONS ---- */
+/* ════════════════════════════════════════════════════════════════════════════
+   ANIMATION SYSTEM — GPU-accelerated, 60fps motion design
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Easing Variables ──────────────────────────────────────────────────── */
+:root {
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-in-out-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --ease-in-fast: cubic-bezier(0.4, 0, 1, 1);
+}
+
+/* ── Transition Utilities ──────────────────────────────────────────────── */
+.transition-smooth {
+  transition: all 300ms var(--ease-in-out-smooth);
+}
+.transition-spring {
+  transition: all 350ms var(--ease-out-back);
+}
+.transition-fast {
+  transition: all 150ms ease-out;
+}
+
+/* ── Terminal / Text Glow ──────────────────────────────────────────────── */
 .terminal-glow {
   text-shadow: 0 0 10px hsla(142, 70%, 45%, 0.5);
 }
 
+/* ── Cursor Blink (smooth pulse instead of hard step) ──────────────── */
 .cursor-blink {
-  animation: blink 1s step-end infinite;
+  animation: cursorPulse 1.2s ease-in-out infinite;
 }
-
-@keyframes blink {
+@keyframes cursorPulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+  50% { opacity: 0.2; }
 }
 
+/* ── Typing Effect ─────────────────────────────────────────────────────── */
 .typing-effect {
   animation: typing 0.05s steps(1) forwards;
 }
 
+/* ── Fade In (generic — with subtle slide) ─────────────────────────── */
 .animate-fade-in {
-  animation: fadeIn 0.3s ease-in-out;
+  animation: fadeIn 0.35s var(--ease-out-expo) both;
 }
-
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ── Fade Out ──────────────────────────────────────────────────────────── */
+.animate-fade-out {
+  animation: fadeOut 0.3s var(--ease-in-fast) both;
+}
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* ── Pulse (breathing) ─────────────────────────────────────────────────── */
 .animate-pulse {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
-
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
 }
 
+/* ── Spin ──────────────────────────────────────────────────────────────── */
 .animate-spin {
   animation: spin 1s linear infinite;
 }
-
 @keyframes spin {
   from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   BOOT SEQUENCE ANIMATIONS
+   ════════════════════════════════════════════════════════════════════════════ */
+
+.boot-logo-enter {
+  animation: bootLogoIn 0.6s var(--ease-out-expo) both;
+}
+@keyframes bootLogoIn {
+  from { opacity: 0; transform: scale(0.92) translateY(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.boot-line-enter {
+  animation: bootLineIn 0.3s var(--ease-out-expo) both;
+}
+@keyframes bootLineIn {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.boot-screen-exit {
+  animation: bootScreenOut 0.5s var(--ease-in-out-smooth) both;
+}
+@keyframes bootScreenOut {
+  from { opacity: 1; filter: blur(0); }
+  to   { opacity: 0; filter: blur(8px); }
+}
+
+/* Stagger delay classes for boot lines */
+.stagger-0 { animation-delay: 0ms; }
+.stagger-1 { animation-delay: 60ms; }
+.stagger-2 { animation-delay: 120ms; }
+.stagger-3 { animation-delay: 180ms; }
+.stagger-4 { animation-delay: 240ms; }
+.stagger-5 { animation-delay: 300ms; }
+.stagger-6 { animation-delay: 360ms; }
+.stagger-7 { animation-delay: 420ms; }
+.stagger-8 { animation-delay: 480ms; }
+.stagger-9 { animation-delay: 540ms; }
+.stagger-10 { animation-delay: 600ms; }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   LOGIN SCREEN ANIMATIONS
+   ════════════════════════════════════════════════════════════════════════════ */
+
+.login-clock-enter {
+  animation: loginClockIn 0.7s var(--ease-out-expo) 0.1s both;
+}
+@keyframes loginClockIn {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.login-avatar-enter {
+  animation: loginAvatarIn 0.6s var(--ease-out-back) 0.2s both;
+}
+@keyframes loginAvatarIn {
+  from { opacity: 0; transform: scale(0.7); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.login-card-enter {
+  animation: loginCardIn 0.5s var(--ease-out-expo) 0.35s both;
+}
+@keyframes loginCardIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.login-icons-enter {
+  animation: loginIconsIn 0.4s var(--ease-out-expo) 0.5s both;
+}
+@keyframes loginIconsIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.login-exit {
+  animation: loginExit 0.5s var(--ease-in-out-smooth) both;
+}
+@keyframes loginExit {
+  from { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+  to   { opacity: 0; transform: translateY(-40px) scale(1.02); filter: blur(12px); }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   DESKTOP ANIMATIONS
+   ════════════════════════════════════════════════════════════════════════════ */
+
+.desktop-enter {
+  animation: desktopIn 0.6s var(--ease-out-expo) both;
+}
+@keyframes desktopIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Desktop icon staggered entrance */
+.icon-entrance {
+  animation: iconIn 0.45s var(--ease-out-back) both;
+}
+@keyframes iconIn {
+  from { opacity: 0; transform: scale(0.5); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Double-click bounce */
+.icon-bounce {
+  animation: iconBounce 0.35s var(--ease-out-back) both;
+}
+@keyframes iconBounce {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(0.82); }
+  70%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   TERMINAL WINDOW ANIMATIONS
+   ════════════════════════════════════════════════════════════════════════════ */
+
+.terminal-open {
+  transform-origin: left bottom;
+  animation: terminalScaleIn 0.35s var(--ease-out-back) both;
+}
+@keyframes terminalScaleIn {
+  from { opacity: 0; transform: scale(0.2); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.terminal-minimize {
+  transform-origin: left bottom;
+  animation: terminalMinimize 0.35s var(--ease-in-out-smooth) both;
+}
+@keyframes terminalMinimize {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.2); }
+}
+
+.terminal-restore {
+  transform-origin: left bottom;
+  animation: terminalRestore 0.4s var(--ease-out-back) both;
+}
+@keyframes terminalRestore {
+  from { opacity: 0; transform: scale(0.2); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Minimized pill entrance */
+.pill-enter {
+  animation: pillIn 0.3s var(--ease-out-expo) both;
+}
+@keyframes pillIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px) scale(0.8); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+
+/* Terminal color transitions (applied to body) */
+.terminal-theme-transition {
+  transition: background-color 400ms ease-in-out, color 300ms ease-in-out, border-color 300ms ease-in-out;
+}
+
+/* Traffic light hover */
+.traffic-light {
+  transition: transform 120ms ease-out, filter 120ms ease-out;
+}
+.traffic-light:hover {
+  transform: scale(1.2);
+  filter: brightness(1.15);
+}
+.traffic-light:active {
+  transform: scale(0.88);
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   MENU / POPUP ANIMATIONS (Start, Theme, Wallpaper, Reset)
+   ════════════════════════════════════════════════════════════════════════════ */
+
+.menu-slide-up {
+  animation: menuSlideUp 0.25s var(--ease-out-expo) both;
+}
+@keyframes menuSlideUp {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.menu-slide-down {
+  animation: menuSlideDown 0.2s var(--ease-in-fast) both;
+}
+@keyframes menuSlideDown {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to   { opacity: 0; transform: translateY(8px) scale(0.97); }
+}
+
+.dialog-scale-in {
+  animation: dialogIn 0.3s var(--ease-out-back) both;
+}
+@keyframes dialogIn {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.85); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+.backdrop-fade-in {
+  animation: backdropIn 0.2s ease-out both;
+}
+@keyframes backdropIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   TASKBAR MICRO-INTERACTIONS
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* Active indicator pulse */
+.taskbar-indicator-active {
+  animation: indicatorPulse 2s ease-in-out infinite;
+}
+@keyframes indicatorPulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 4px rgba(96,165,250,0.5); }
+  50% { opacity: 0.6; box-shadow: 0 0 8px rgba(96,165,250,0.8); }
+}
+
+/* Button press effect */
+.btn-press:active {
+  transform: scale(0.93);
+  transition: transform 80ms ease-out;
+}
+
+/* Tooltip entrance */
+.tooltip-enter {
+  animation: tooltipIn 0.15s ease-out both;
+}
+@keyframes tooltipIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   STATE TRANSITION OVERLAYS
+   ════════════════════════════════════════════════════════════════════════════ */
+
+.state-transition-fade-out {
+  animation: stateOut 0.4s var(--ease-in-out-smooth) both;
+}
+@keyframes stateOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+.state-transition-fade-in {
+  animation: stateIn 0.5s var(--ease-out-expo) both;
+}
+@keyframes stateIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 /* ---- TERMINAL SCROLLBAR ---- */

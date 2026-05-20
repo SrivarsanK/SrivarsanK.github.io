@@ -1,6 +1,8 @@
 use dioxus::prelude::*;
 use serde::Deserialize;
 use wasm_bindgen::JsCast;
+use std::time::Duration;
+use gloo_timers::future::sleep;
 
 #[derive(Clone)]
 enum LineType {
@@ -23,6 +25,7 @@ struct TerminalLine {
 pub struct TerminalProps {
     pub external_command: Signal<Option<String>>,
     pub current_theme: Signal<String>,
+    pub is_minimized: Signal<bool>,
 }
 
 #[derive(Deserialize)]
@@ -70,6 +73,7 @@ fn scroll_to_bottom() {
 pub fn Terminal(props: TerminalProps) -> Element {
     let mut external_cmd = props.external_command;
     let current_theme = props.current_theme;
+    let mut is_minimized = props.is_minimized;
 
     let mut lines = use_signal(|| {
         vec![TerminalLine {
@@ -84,8 +88,10 @@ pub fn Terminal(props: TerminalProps) -> Element {
     let mut command_history = use_signal(|| Vec::<String>::new());
     let mut history_index = use_signal(|| -1i32);
 
-    let mut is_minimized = use_signal(|| false);
     let mut is_maximized = use_signal(|| false);
+
+    // Animation state: "open", "minimize", "restore", "idle"
+    let mut anim_state = use_signal(|| "open".to_string());
 
     let mut pos = use_signal(|| (100.0_f64, 60.0_f64));
     let mut size = use_signal(|| (760.0_f64, 460.0_f64));
@@ -342,28 +348,28 @@ pub fn Terminal(props: TerminalProps) -> Element {
     let (bg_color, text_color, prompt_color, prompt_text, border_color, header_bg) =
         match theme_val.as_str() {
             "powershell" => (
-                "#012456", "#ffffff", "#00ff00",
-                "PS Guest@Portfolio> ", "#1a3a6e", "#0a1e4a",
+                "#012456", "#ffffff", "#ffffff",
+                "PS C:\\Users\\ren> ", "#1a3a6e", "#0a1e4a",
             ),
             "ubuntu" => (
-                "#300a24", "#ffffff", "#8ae234",
-                "guest@portfolio:~$ ", "#6a1a4a", "#4a0a34",
+                "#300a24", "#ffffff", "#ffffff",
+                "ren@ubuntu:~$ ", "#5c1345", "#470e35",
             ),
             "matrix" => (
-                "#000000", "#00ff00", "#00ff00",
-                "guest@matrix:~$ ", "#003300", "#001a00",
+                "#000500", "#00FF41", "#00FF41",
+                "neo@matrix:~$ ", "#003300", "#001a00",
             ),
-            "retro" => (
-                "#2d2d2d", "#ffb000", "#ffb000",
-                "C:\\> ", "#555500", "#3a3a00",
+            "cmd" => (
+                "#000000", "#ffffff", "#ffffff",
+                "C:\\Users\\ren> ", "#333333", "#111111",
             ),
             "dracula" => (
-                "#282a36", "#f8f8f2", "#50fa7b",
-                "guest@dracula:~$ ", "#44475a", "#1e2029",
+                "#282a36", "#f8f8f2", "#bd93f9",
+                "λ ", "#44475a", "#1e2029",
             ),
             _ => (
-                "#012456", "#ffffff", "#00ff00",
-                "guest@portfolio:~$ ", "#1a3a6e", "#0a1e4a",
+                "#012456", "#ffffff", "#ffffff",
+                "PS C:\\Users\\ren> ", "#1a3a6e", "#0a1e4a",
             ),
         };
 
@@ -457,10 +463,15 @@ pub fn Terminal(props: TerminalProps) -> Element {
     if is_minimized() {
         return rsx! {
             div {
+                class: "pill-enter",
                 style: "position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); background-color: {header_bg}; border: 1px solid {border_color}; border-radius: 0.5rem 0.5rem 0 0; padding: 0.35rem 1.25rem; cursor: pointer; box-shadow: 0 -4px 20px rgba(0,0,0,0.4); display: flex; align-items: center; gap: 0.5rem; z-index: 60; pointer-events: auto;",
-                onclick: move |_| is_minimized.set(false),
+                onclick: move |_| {
+                    anim_state.set("restore".to_string());
+                    is_minimized.set(false);
+                },
                 div {
-                    style: "width: 8px; height: 8px; border-radius: 9999px; background-color: {prompt_color}; animation: pulse 2s cubic-bezier(0.4,0,0.6,1) infinite;"
+                    class: "taskbar-indicator-active",
+                    style: "width: 8px; height: 8px; border-radius: 9999px; background-color: {prompt_color};"
                 }
                 span {
                     style: "font-size: 0.75rem; font-family: monospace; color: {text_color};",
@@ -496,8 +507,26 @@ pub fn Terminal(props: TerminalProps) -> Element {
         ""
     };
 
+    // Determine animation class based on state
+    let anim_class = match anim_state().as_str() {
+        "open" => "terminal-open",
+        "restore" => "terminal-restore",
+        "minimize" => "terminal-minimize",
+        _ => "",
+    };
+
+    // Maximize transition: smooth border-radius + size
+    let border_radius = if is_maximized() { "0" } else { "0.5rem" };
+
+    let transition_style = if dragging_header().is_some() || resizing().is_some() {
+        "transition: none;"
+    } else {
+        "transition: width 300ms cubic-bezier(0.4, 0, 0.2, 1), height 300ms cubic-bezier(0.4, 0, 0.2, 1), top 300ms cubic-bezier(0.4, 0, 0.2, 1), left 300ms cubic-bezier(0.4, 0, 0.2, 1), border-radius 300ms ease;"
+    };
+
     rsx! {
         div {
+            class: "{anim_class}",
             style: "
                 position: absolute;
                 top: {top_style};
@@ -506,14 +535,18 @@ pub fn Terminal(props: TerminalProps) -> Element {
                 height: {height_style};
                 z-index: 40;
                 border: 1px solid {border_color};
-                border-radius: 0.5rem;
+                border-radius: {border_radius};
                 overflow: hidden;
                 box-shadow: 0 25px 60px rgba(0,0,0,0.7), 0 0 0 1px {border_color};
                 display: flex;
                 flex-direction: column;
                 pointer-events: auto;
+                {transition_style}
                 {user_select_style}
             ",
+            onanimationend: move |_| {
+                anim_state.set("idle".to_string());
+            },
             onpointermove: handle_pointer_move,
             onpointerup: handle_pointer_up,
             onpointerleave: handle_pointer_up,
@@ -548,15 +581,22 @@ pub fn Terminal(props: TerminalProps) -> Element {
 
                     // Red = close (acts as minimize here like macOS)
                     div {
+                        class: "traffic-light",
                         style: "width: 12px; height: 12px; border-radius: 50%; background: #ff5f57; cursor: pointer; flex-shrink: 0;",
                         title: "Minimize",
                         onclick: move |e| {
                             e.stop_propagation();
-                            is_minimized.set(true);
+                            anim_state.set("minimize".to_string());
+                            let mut is_min_clone = is_minimized.clone();
+                            spawn(async move {
+                                sleep(Duration::from_millis(300)).await;
+                                is_min_clone.set(true);
+                            });
                         }
                     }
                     // Yellow = minimize (acts as restore/maximize)
                     div {
+                        class: "traffic-light",
                         style: "width: 12px; height: 12px; border-radius: 50%; background: #febc2e; cursor: pointer; flex-shrink: 0;",
                         title: "Maximize / Restore",
                         onclick: move |e| {
@@ -566,6 +606,7 @@ pub fn Terminal(props: TerminalProps) -> Element {
                     }
                     // Green = fullscreen
                     div {
+                        class: "traffic-light",
                         style: "width: 12px; height: 12px; border-radius: 50%; background: #28c840; cursor: pointer; flex-shrink: 0;",
                         title: "Full Screen",
                         onclick: move |e| {
@@ -588,6 +629,7 @@ pub fn Terminal(props: TerminalProps) -> Element {
             // ─── Scrollable Output Body ────────────────────────────────────
             div {
                 id: "terminal-body",
+                class: "terminal-theme-transition",
                 style: "
                     background-color: {bg_color};
                     color: {text_color};
