@@ -650,7 +650,6 @@ body {
 .object-center { object-position: center; }
 .hidden { display: none; }
 .block { display: block; }
-.group { }
 .transition-all { transition: all 0.15s ease; }
 .transition-colors { transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease; }
 .transition-transform { transition: transform 0.15s ease; }
@@ -687,7 +686,6 @@ body {
   to { transform: translateX(0); opacity: 1; }
 }
 
-.animate-in { }
 .fade-in { animation: animate-in-fade 0.3s ease forwards; }
 .zoom-in-95 { animation: animate-in-zoom 0.2s ease forwards; }
 .slide-in-from-left-1 { animation: slide-in-from-left 0.2s ease forwards; }
