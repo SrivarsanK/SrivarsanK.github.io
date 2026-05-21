@@ -1,6 +1,6 @@
 <div align="center">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/d/d5/Rust_programming_language_black_logo.svg" alt="Rust Logo" width="100" height="100">
-  <img src="https://dioxuslabs.com/assets/dioxus.svg" alt="Dioxus Logo" width="100" height="100">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/d/d5/Rust_programming_language_black_logo.svg" alt="Rust Logo" width="100" height="100" style="margin-right: 20px;">
+  <img src="https://avatars.githubusercontent.com/u/79236386?s=200&v=4" alt="Dioxus Logo" width="100" height="100">
 
   <h1>🚀 Web OS Portfolio</h1>
   <p>A stunning, high-performance web-based desktop environment portfolio built entirely with <b>Rust</b> and <b>Dioxus 0.7</b>.</p>
