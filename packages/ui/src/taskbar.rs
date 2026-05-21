@@ -147,7 +147,7 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
                                 }
                                 
                                 a {
-                                    href: "https://github.com",
+                                    href: "https://github.com/SrivarsanK",
                                     target: "_blank",
                                     rel: "noopener noreferrer",
                                     style: "display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 0.375rem; transition: background-color 0.15s; text-decoration: none; color: #fff;",
@@ -170,7 +170,7 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
                                 }
 
                                 a {
-                                    href: "mailto:hello@developer.dev",
+                                    href: "mailto:srivarsankannan@gmail.com",
                                     style: "display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 0.375rem; transition: background-color 0.15s; text-decoration: none; color: #fff;",
                                     class: "hover:bg-white/10 text-white/80 hover:text-white group",
                                     svg {

@@ -169,7 +169,7 @@ pub fn Terminal(props: TerminalProps) -> Element {
                             div {
                                 class: "border border-border rounded-lg overflow-hidden w-56 bg-secondary/50 shadow-lg",
                                 img {
-                                    src: "https://iamovi.github.io/assets/sword.jpg",
+                                    src: "https://avatars.githubusercontent.com/SrivarsanK",
                                     alt: "Profile",
                                     class: "w-full h-auto object-cover"
                                 }
@@ -196,14 +196,14 @@ pub fn Terminal(props: TerminalProps) -> Element {
                 lines.write().push(TerminalLine {
                     id: out_id,
                     line_type: LineType::Output,
-                    content: "┌─────────────────────────────────────────┐\n│  FEATURED PROJECTS                      │\n├─────────────────────────────────────────┤\n│  01. syswaifu                           │\n│  02. button-will-react                  │\n│  Visit https://iamovi.github.io         │\n└─────────────────────────────────────────┘".to_string(),
+                    content: "┌─────────────────────────────────────────┐\n│  FEATURED PROJECTS                      │\n├─────────────────────────────────────────┤\n│  01. Rust Web OS                        │\n│  02. Portfolio                          │\n│  Visit https://github.com/SrivarsanK    │\n└─────────────────────────────────────────┘".to_string(),
                 });
             }
             "contact" => {
                 lines.write().push(TerminalLine {
                     id: out_id,
                     line_type: LineType::Output,
-                    content: "┌─────────────────────────────────────────┐\n│  CONTACT                                │\n├─────────────────────────────────────────┤\n│  📧 Email      fornet.ovi@email.com     │\n│  🐙 GitHub     github.com/iamovi        │\n│  🌐 Website    iamovi.github.io         │\n└─────────────────────────────────────────┘".to_string(),
+                    content: "┌─────────────────────────────────────────────┐\n│  CONTACT                                    │\n├─────────────────────────────────────────────┤\n│  📧 Email      srivarsankannan@gmail.com    │\n│  🐙 GitHub     github.com/SrivarsanK        │\n│  🌐 Website    github.com/SrivarsanK        │\n└─────────────────────────────────────────────┘".to_string(),
                 });
             }
             "whoami" => {
