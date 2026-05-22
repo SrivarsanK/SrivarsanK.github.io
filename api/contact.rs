@@ -1,3 +1,4 @@
+// Vercel Serverless Function: contact
 use vercel_runtime::{run, service_fn, Error, Request, ResponseBody};
 use http::{Response, StatusCode};
 use http_body_util::BodyExt;
