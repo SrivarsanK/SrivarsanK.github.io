@@ -14,3 +14,6 @@ web = ["dioxus/web"]
 
 [lints]
 workspace = true
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false
