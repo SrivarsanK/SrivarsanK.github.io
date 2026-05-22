@@ -42,6 +42,9 @@ jobs:
       - name: Build Dioxus Web App
         run: dx build --release --platform web --package web
 
+      - name: Copy Google Verification File
+        run: cp google57407e739a6d98db.html target/dx/web/release/web/public/
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
