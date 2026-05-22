@@ -1,8 +1,7 @@
-// Trigger rebuild for login screen updates
 use dioxus::prelude::*;
 use ui::{BootSequence, LoginScreen, Taskbar, DesktopIcons, Terminal};
 
-const FAVICON: Asset = asset!("/assets/favicon.ico");
+const FAVICON: Asset = asset!("/assets/favicon.png");
 const MAIN_CSS: Asset = asset!("/assets/main.css");
 const FRIEREN_BG: Asset = asset!("/assets/frieren.jpg");
 
@@ -23,7 +22,9 @@ fn App() -> Element {
     let mut current_theme = use_signal(|| "powershell".to_string());
     let mut wallpaper = use_signal(|| None::<String>);
     let mut external_command = use_signal(|| None::<String>);
-    let mut is_minimized = use_signal(|| false);
+    let is_minimized = use_signal(|| false);
+    let frieren_str = FRIEREN_BG.to_string();
+    let frieren_for_effect = frieren_str.clone();
 
     // Load saved preferences on client-side mount
     use_effect(move || {
@@ -37,7 +38,7 @@ fn App() -> Element {
                     }
                 } else {
                     // Default wallpaper
-                    wallpaper.set(Some(FRIEREN_BG.to_string()));
+                    wallpaper.set(Some(frieren_for_effect.clone()));
                 }
                 if let Ok(Some(saved_theme)) = storage.get_item("terminal-theme") {
                     current_theme.set(saved_theme);
@@ -118,7 +119,7 @@ fn App() -> Element {
                         Taskbar {
                             current_theme,
                             wallpaper,
-                            default_wallpaper: FRIEREN_BG.to_string(),
+                            default_wallpaper: frieren_str.clone(),
                             is_minimized,
                             on_logout: move |_| os_state.set(OsState::Login),
                             on_reset: handle_reset

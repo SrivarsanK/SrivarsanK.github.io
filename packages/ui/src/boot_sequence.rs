@@ -13,7 +13,7 @@ const BOOT_TEXT: &[&str] = &[
     "Initializing Global Modules... DONE",
     "Searching for User Profiles... FOUND",
     "",
-    "Starting RenOS v2.1.0...",
+    "Starting SOS v2.1.0...",
 ];
 
 #[component]

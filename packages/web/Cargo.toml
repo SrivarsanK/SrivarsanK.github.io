@@ -12,3 +12,6 @@ web-sys = { version = "0.3.98", features = ["Window", "Storage", "console"] }
 default = []
 web = ["dioxus/web"]
 server = ["dioxus/server", "ui/server"]
+
+[lints]
+workspace = true

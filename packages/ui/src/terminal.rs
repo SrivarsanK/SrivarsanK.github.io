@@ -3,6 +3,7 @@ use serde::Deserialize;
 use wasm_bindgen::JsCast;
 use std::time::Duration;
 use gloo_timers::future::sleep;
+use crate::contact::ContactForm;
 
 #[derive(Clone)]
 enum LineType {
@@ -10,6 +11,8 @@ enum LineType {
     Output,
     Error,
     Info,
+    // Reserved for future success-styled output (e.g., command confirmations)
+    #[expect(dead_code)]
     Success,
     Component(Element),
 }
@@ -21,16 +24,42 @@ struct TerminalLine {
     content: String,
 }
 
+struct ThemeColors {
+    id: &'static str,
+    bg: &'static str,
+    text: &'static str,
+    prompt_color: &'static str,
+    prompt_text: &'static str,
+    border: &'static str,
+    header_bg: &'static str,
+}
+
+const THEME_PRESETS: &[ThemeColors] = &[
+    ThemeColors { id: "powershell", bg: "#012456", text: "#ffffff", prompt_color: "#ffffff", prompt_text: "PS C:\\Users\\ren> ", border: "#1a3a6e", header_bg: "#0a1e4a" },
+    ThemeColors { id: "ubuntu", bg: "#300a24", text: "#ffffff", prompt_color: "#ffffff", prompt_text: "ren@ubuntu:~$ ", border: "#5c1345", header_bg: "#470e35" },
+    ThemeColors { id: "matrix", bg: "#000500", text: "#00FF41", prompt_color: "#00FF41", prompt_text: "neo@matrix:~$ ", border: "#003300", header_bg: "#001a00" },
+    ThemeColors { id: "cmd", bg: "#000000", text: "#ffffff", prompt_color: "#ffffff", prompt_text: "C:\\Users\\ren> ", border: "#333333", header_bg: "#111111" },
+    ThemeColors { id: "dracula", bg: "#282a36", text: "#f8f8f2", prompt_color: "#bd93f9", prompt_text: "λ ", border: "#44475a", header_bg: "#1e2029" },
+];
+
+/// Default theme (PowerShell) used when no match found.
+const DEFAULT_THEME: &ThemeColors = &THEME_PRESETS[0];
+
+fn find_theme(id: &str) -> &'static ThemeColors {
+    THEME_PRESETS.iter().find(|t| t.id == id).unwrap_or(DEFAULT_THEME)
+}
+
+fn alloc_id(next_id: &mut Signal<usize>) -> usize {
+    let id = *next_id.read();
+    *next_id.write() += 1;
+    id
+}
+
 #[derive(Props, Clone, PartialEq)]
 pub struct TerminalProps {
     pub external_command: Signal<Option<String>>,
     pub current_theme: Signal<String>,
     pub is_minimized: Signal<bool>,
-}
-
-#[derive(Deserialize)]
-struct WaifuResponse {
-    url: String,
 }
 
 #[derive(Deserialize)]
@@ -42,7 +71,7 @@ struct JokeResponse {
     delivery: Option<String>,
 }
 
-const WELCOME_MESSAGE: &str = r#"Hello, World! I'm Ovi ren
+const WELCOME_MESSAGE: &str = r#"Hello, World! I'm Srivarsan K
 I'm a writer, i write scripts.
 
 Type 'help' to see available commands."#;
@@ -127,12 +156,11 @@ pub fn Terminal(props: TerminalProps) -> Element {
         let trimmed_lower = trimmed.to_lowercase();
 
         // Echo the input line
-        let id = *next_id.read();
-        *next_id.write() += 1;
+        let id = alloc_id(&mut next_id);
         lines.write().push(TerminalLine {
             id,
             line_type: LineType::Input,
-            content: cmd_str.clone(),
+            content: cmd_str,
         });
 
         if trimmed.is_empty() {
@@ -149,15 +177,14 @@ pub fn Terminal(props: TerminalProps) -> Element {
             return;
         }
 
-        let out_id = *next_id.read();
-        *next_id.write() += 1;
+        let out_id = alloc_id(&mut next_id);
 
         match trimmed_lower.as_str() {
             "help" => {
                 lines.write().push(TerminalLine {
                     id: out_id,
                     line_type: LineType::Output,
-                    content: "Available commands:\n  help      - Show this help message\n  about     - Learn about me\n  skills    - View my technical skills\n  projects  - Browse my projects\n  contact   - Get my contact information\n  whoami    - Display current user\n  date      - Show current date and time\n  clear/cls - Clear the terminal\n  waifu     - Show a random waifu image\n  joke      - Tell a random joke".to_string(),
+                    content: "Available commands:\n  help      - Show this help message\n  about     - Learn about me\n  skills    - View my technical skills\n  projects  - Browse my projects\n  contact   - Get my contact information\n  whoami    - Display current user\n  date      - Show current date and time\n  clear/cls - Clear the terminal\n  joke      - Tell a random joke".to_string(),
                 });
             }
             "about" => {
@@ -165,47 +192,224 @@ pub fn Terminal(props: TerminalProps) -> Element {
                     id: out_id,
                     line_type: LineType::Component(rsx! {
                         div {
-                            class: "my-2 space-y-3",
+                            class: "my-2",
                             div {
-                                class: "border border-border rounded-lg overflow-hidden w-56 bg-secondary/50 shadow-lg",
-                                img {
-                                    src: "https://avatars.githubusercontent.com/SrivarsanK",
-                                    alt: "Profile",
-                                    class: "w-full h-auto object-cover"
+                                class: "font-mono leading-relaxed bg-secondary/30 p-4 border border-border rounded-lg max-w-2xl",
+                                div { class: "text-terminal-cyan font-bold mb-4", "┌ ABOUT ME ┐" }
+                                div {
+                                    class: "mb-4 flex items-center gap-4",
+                                    img {
+                                        src: "https://github.com/SrivarsanK.png",
+                                        alt: "Srivarsan K",
+                                        class: "w-20 h-28 object-cover rounded-lg border border-border/50 shadow-md"
+                                    }
+                                    div {
+                                        div { class: "text-lg font-bold text-foreground", "Srivarsan K" }
+                                        div { class: "text-sm text-foreground/70", "B.Tech Artificial Intelligence • Builder • Hackathon Finalist" }
+                                    }
                                 }
-                            }
-                            div {
-                                class: "font-mono leading-relaxed bg-secondary/30 p-4 border border-border rounded-lg max-w-lg",
-                                div { class: "text-terminal-cyan font-bold mb-2", "┌ ABOUT ME ┐" }
-                                p { class: "mb-2 text-foreground/90", "Hi! I'm a hobby programmer. I love building things and exploring new technologies in my free time." }
-                                p { class: "text-foreground/90", "When I was in high school I started programming as my hobby, that's how it all started." }
+                                p { class: "mb-4 text-foreground/90", "I build things that matter \u{2014} AI-powered platforms, energy tools, mental health apps, and insurance systems for India's gig workers. From parametric trigger engines to LSTM models, I write code that bridges real-world problems with cutting-edge technology." }
+                                p { class: "mb-6 text-foreground/90", "When I'm not shipping projects, I'm designing experiences in Figma or cutting timelines in DaVinci Resolve." }
+                                
+                                div { class: "border-t border-border/50 pt-4 mt-2",
+                                    p { class: "text-foreground/80 mb-4 text-sm", "Let's collaborate! You can find me on these platforms or reach out directly via email at ", a { href: "mailto:srivarsankannan@gmail.com", class: "text-terminal-cyan hover:underline", "srivarsankannan@gmail.com" } }
+                                    div { class: "flex flex-wrap gap-4 text-sm",
+                                        a { href: "https://github.com/SrivarsanK", target: "_blank", class: "text-white hover:text-white/80 transition-colors flex items-center gap-1 border border-border/50 px-2 py-1 rounded bg-background/30", style: "color: white; text-decoration: none;",
+                                            span { "GitHub" }
+                                        }
+                                        a { href: "https://linkedin.com/in/ksrivarsan", target: "_blank", class: "text-white hover:text-white/80 transition-colors flex items-center gap-1 border border-border/50 px-2 py-1 rounded bg-background/30", style: "color: white; text-decoration: none;",
+                                            span { "LinkedIn" }
+                                        }
+                                        a { href: "https://x.com/KSrivarsan", target: "_blank", class: "text-white hover:text-white/80 transition-colors flex items-center gap-1 border border-border/50 px-2 py-1 rounded bg-background/30", style: "color: white; text-decoration: none;",
+                                            span { "X/Twitter" }
+                                        }
+                                        a { href: "https://www.instagram.com/srivarsankannan", target: "_blank", class: "text-white hover:text-white/80 transition-colors flex items-center gap-1 border border-border/50 px-2 py-1 rounded bg-background/30", style: "color: white; text-decoration: none;",
+                                            span { "Instagram" }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }),
                     content: "".to_string(),
                 });
             }
+            "contact" => {
+                lines.write().push(TerminalLine {
+                    id: out_id,
+                    line_type: LineType::Component(rsx! { ContactForm {} }),
+                    content: "".to_string(),
+                });
+            }
             "skills" => {
                 lines.write().push(TerminalLine {
                     id: out_id,
-                    line_type: LineType::Output,
-                    content: "┌─────────────────────────────────────────┐\n│  TECHNICAL SKILLS                       │\n├─────────────────────────────────────────┤\n│  • Rust, TypeScript, Python             │\n│  • Dioxus, React, Next.js               │\n│  • TailwindCSS, Git, Docker             │\n└─────────────────────────────────────────┘".to_string(),
+                    line_type: LineType::Component(rsx! {
+                        div {
+                            class: "my-2 font-mono leading-relaxed bg-secondary/30 p-4 border border-border rounded-lg max-w-3xl",
+                            div { class: "text-terminal-cyan font-bold mb-4", "┌ TECHNICAL SKILLS ┐" }
+                            
+                            // Languages (Purple)
+                            div { class: "text-sm text-foreground/60 mb-2 mt-4 font-bold tracking-wide", "LANGUAGES" }
+                            div { class: "flex flex-wrap gap-2",
+                                div { class: "px-3 py-1 rounded-md border border-[#c084fc]/30 bg-[#c084fc]/10 text-[#d8b4fe] text-xs", "Rust" }
+                                div { class: "px-3 py-1 rounded-md border border-[#c084fc]/30 bg-[#c084fc]/10 text-[#d8b4fe] text-xs", "TypeScript" }
+                                div { class: "px-3 py-1 rounded-md border border-[#c084fc]/30 bg-[#c084fc]/10 text-[#d8b4fe] text-xs", "Python" }
+                                div { class: "px-3 py-1 rounded-md border border-[#c084fc]/30 bg-[#c084fc]/10 text-[#d8b4fe] text-xs", "JavaScript" }
+                                div { class: "px-3 py-1 rounded-md border border-[#c084fc]/30 bg-[#c084fc]/10 text-[#d8b4fe] text-xs", "HTML / CSS" }
+                            }
+
+                            // Frameworks / ML (Green)
+                            div { class: "text-sm text-foreground/60 mb-2 mt-4 font-bold tracking-wide", "FRAMEWORKS & ML" }
+                            div { class: "flex flex-wrap gap-2",
+                                div { class: "px-3 py-1 rounded-md border border-[#34d399]/30 bg-[#34d399]/10 text-[#6ee7b7] text-xs", "Next.js" }
+                                div { class: "px-3 py-1 rounded-md border border-[#34d399]/30 bg-[#34d399]/10 text-[#6ee7b7] text-xs", "React" }
+                                div { class: "px-3 py-1 rounded-md border border-[#34d399]/30 bg-[#34d399]/10 text-[#6ee7b7] text-xs", "FastAPI" }
+                                div { class: "px-3 py-1 rounded-md border border-[#34d399]/30 bg-[#34d399]/10 text-[#6ee7b7] text-xs", "Node.js / Express" }
+                                div { class: "px-3 py-1 rounded-md border border-[#34d399]/30 bg-[#34d399]/10 text-[#6ee7b7] text-xs", "TailwindCSS" }
+                                div { class: "px-3 py-1 rounded-md border border-[#34d399]/30 bg-[#34d399]/10 text-[#6ee7b7] text-xs", "XGBoost / LSTM" }
+                            }
+
+                            // Databases (Amber)
+                            div { class: "text-sm text-foreground/60 mb-2 mt-4 font-bold tracking-wide", "DATABASES" }
+                            div { class: "flex flex-wrap gap-2",
+                                div { class: "px-3 py-1 rounded-md border border-[#fbbf24]/30 bg-[#fbbf24]/10 text-[#fcd34d] text-xs", "PostgreSQL" }
+                                div { class: "px-3 py-1 rounded-md border border-[#fbbf24]/30 bg-[#fbbf24]/10 text-[#fcd34d] text-xs", "MySQL" }
+                                div { class: "px-3 py-1 rounded-md border border-[#fbbf24]/30 bg-[#fbbf24]/10 text-[#fcd34d] text-xs", "Supabase" }
+                                div { class: "px-3 py-1 rounded-md border border-[#fbbf24]/30 bg-[#fbbf24]/10 text-[#fcd34d] text-xs", "Redis" }
+                                div { class: "px-3 py-1 rounded-md border border-[#fbbf24]/30 bg-[#fbbf24]/10 text-[#fcd34d] text-xs", "Convex" }
+                            }
+
+                            // Tools (Coral)
+                            div { class: "text-sm text-foreground/60 mb-2 mt-4 font-bold tracking-wide", "TOOLS" }
+                            div { class: "flex flex-wrap gap-2",
+                                div { class: "px-3 py-1 rounded-md border border-[#fb7185]/30 bg-[#fb7185]/10 text-[#fda4af] text-xs", "Figma" }
+                                div { class: "px-3 py-1 rounded-md border border-[#fb7185]/30 bg-[#fb7185]/10 text-[#fda4af] text-xs", "AutoCAD" }
+                                div { class: "px-3 py-1 rounded-md border border-[#fb7185]/30 bg-[#fb7185]/10 text-[#fda4af] text-xs", "DaVinci Resolve" }
+                                div { class: "px-3 py-1 rounded-md border border-[#fb7185]/30 bg-[#fb7185]/10 text-[#fda4af] text-xs", "Photoshop" }
+                                div { class: "px-3 py-1 rounded-md border border-[#fb7185]/30 bg-[#fb7185]/10 text-[#fda4af] text-xs", "Docker" }
+                            }
+                        }
+                    }),
+                    content: "".to_string(),
                 });
             }
             "projects" => {
                 lines.write().push(TerminalLine {
                     id: out_id,
-                    line_type: LineType::Output,
-                    content: "┌─────────────────────────────────────────┐\n│  FEATURED PROJECTS                      │\n├─────────────────────────────────────────┤\n│  01. Rust Web OS                        │\n│  02. Portfolio                          │\n│  Visit https://github.com/SrivarsanK    │\n└─────────────────────────────────────────┘".to_string(),
+                    line_type: LineType::Component(rsx! {
+                        div {
+                            class: "my-2 font-mono leading-relaxed bg-secondary/30 p-4 border border-border rounded-lg max-w-4xl",
+                            div { class: "text-terminal-cyan font-bold mb-4", "┌ FEATURED PROJECTS ┐" }
+                            div {
+                                style: "display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;",
+                                // 1
+                                a {
+                                    href: "https://github.com/SrivarsanK/RideSuraksha", target: "_blank",
+                                    class: "border border-border/50 rounded-md p-3 hover:bg-background/60 transition-colors block cursor-pointer",
+                                    style: "text-decoration: none; color: inherit;",
+                                    div { class: "font-bold text-terminal-cyan mb-1", "RideSuraksha" }
+                                    p { class: "text-xs mb-2", style: "color: white;", "Ride safety application for safer commutes." }
+                                    div { class: "text-[10px] text-foreground/60", "TypeScript" }
+                                }
+                                // 2
+                                a {
+                                    href: "https://github.com/SrivarsanK/aws_a4b", target: "_blank",
+                                    class: "border border-border/50 rounded-md p-3 hover:bg-background/60 transition-colors block cursor-pointer",
+                                    style: "text-decoration: none; color: inherit;",
+                                    div { class: "font-bold text-terminal-cyan mb-1", "aws_a4b" }
+                                    p { class: "text-xs mb-2", style: "color: white;", "AI-powered command center for managing multiple creators" }
+                                    div { class: "text-[10px] text-foreground/60", "TypeScript" }
+                                }
+                                // 3
+                                a {
+                                    href: "https://github.com/SrivarsanK/MindBridge", target: "_blank",
+                                    class: "border border-border/50 rounded-md p-3 hover:bg-background/60 transition-colors block cursor-pointer",
+                                    style: "text-decoration: none; color: inherit;",
+                                    div { class: "font-bold text-terminal-cyan mb-1", "MindBridge" }
+                                    p { class: "text-xs mb-2", style: "color: white;", "Mental health and wellness bridging platform." }
+                                    div { class: "text-[10px] text-foreground/60", "TypeScript" }
+                                }
+                                // 4
+                                a {
+                                    href: "https://github.com/SrivarsanK/UrjaBandhu", target: "_blank",
+                                    class: "border border-border/50 rounded-md p-3 hover:bg-background/60 transition-colors block cursor-pointer",
+                                    style: "text-decoration: none; color: inherit;",
+                                    div { class: "font-bold text-terminal-cyan mb-1", "UrjaBandhu" }
+                                    p { class: "text-xs mb-2", style: "color: white;", "Smart energy management platform." }
+                                    div { class: "text-[10px] text-foreground/60", "TypeScript" }
+                                }
+                                // 5
+                                a {
+                                    href: "https://github.com/SrivarsanK/CAD-mob", target: "_blank",
+                                    class: "border border-border/50 rounded-md p-3 hover:bg-background/60 transition-colors block cursor-pointer",
+                                    style: "text-decoration: none; color: inherit;",
+                                    div { class: "font-bold text-terminal-cyan mb-1", "CAD-mob" }
+                                    p { class: "text-xs mb-2", style: "color: white;", "Agentic Causal Architecture for human mobility prediction." }
+                                    div { class: "text-[10px] text-foreground/60", "TypeScript" }
+                                }
+                                // 6
+                                a {
+                                    href: "https://github.com/SrivarsanK/autobuddy", target: "_blank",
+                                    class: "border border-border/50 rounded-md p-3 hover:bg-background/60 transition-colors block cursor-pointer",
+                                    style: "text-decoration: none; color: inherit;",
+                                    div { class: "font-bold text-terminal-cyan mb-1", "autobuddy" }
+                                    p { class: "text-xs mb-2", style: "color: white;", "System monitoring daemon with Telegram alerts & self-healing." }
+                                    div { class: "text-[10px] text-foreground/60", "JavaScript" }
+                                }
+                                // 7
+                                a {
+                                    href: "https://github.com/SrivarsanK/OC-Detect", target: "_blank",
+                                    class: "border border-border/50 rounded-md p-3 hover:bg-background/60 transition-colors block cursor-pointer",
+                                    style: "text-decoration: none; color: inherit;",
+                                    div { class: "font-bold text-terminal-cyan mb-1", "OC-Detect" }
+                                    p { class: "text-xs mb-2", style: "color: white;", "Object and Context Detection with ML." }
+                                    div { class: "text-[10px] text-foreground/60", "Python" }
+                                }
+                                // 8
+                                a {
+                                    href: "https://github.com/SrivarsanK/cloud9-infra", target: "_blank",
+                                    class: "border border-border/50 rounded-md p-3 hover:bg-background/60 transition-colors block cursor-pointer",
+                                    style: "text-decoration: none; color: inherit;",
+                                    div { class: "font-bold text-terminal-cyan mb-1", "cloud9-infra" }
+                                    p { class: "text-xs mb-2", style: "color: white;", "Infrastructure as Code for cloud environments." }
+                                    div { class: "text-[10px] text-foreground/60", "TypeScript" }
+                                }
+                                // 9
+                                a {
+                                    href: "https://github.com/SrivarsanK/RePlate", target: "_blank",
+                                    class: "border border-border/50 rounded-md p-3 hover:bg-background/60 transition-colors block cursor-pointer",
+                                    style: "text-decoration: none; color: inherit;",
+                                    div { class: "font-bold text-terminal-cyan mb-1", "RePlate" }
+                                    p { class: "text-xs mb-2", style: "color: white;", "Food redistribution and waste reduction platform." }
+                                    div { class: "text-[10px] text-foreground/60", "TypeScript" }
+                                }
+                                // 10
+                                a {
+                                    href: "https://github.com/SrivarsanK/TaskMate", target: "_blank",
+                                    class: "border border-border/50 rounded-md p-3 hover:bg-background/60 transition-colors block cursor-pointer",
+                                    style: "text-decoration: none; color: inherit;",
+                                    div { class: "font-bold text-terminal-cyan mb-1", "TaskMate" }
+                                    p { class: "text-xs mb-2", style: "color: white;", "Smart task management and productivity tracker." }
+                                    div { class: "text-[10px] text-foreground/60", "TypeScript" }
+                                }
+                            }
+                            div {
+                                class: "mt-4 text-xs text-foreground/80 flex items-center gap-2",
+                                "Explore more \u{2192}"
+                                a {
+                                    href: "https://github.com/SrivarsanK",
+                                    target: "_blank",
+                                    class: "text-terminal-cyan hover:underline",
+                                    "github.com/SrivarsanK"
+                                }
+                            }
+                        }
+                    }),
+                    content: "".to_string(),
                 });
             }
-            "contact" => {
-                lines.write().push(TerminalLine {
-                    id: out_id,
-                    line_type: LineType::Output,
-                    content: "┌─────────────────────────────────────────────┐\n│  CONTACT                                    │\n├─────────────────────────────────────────────┤\n│  📧 Email      srivarsankannan@gmail.com    │\n│  🐙 GitHub     github.com/SrivarsanK        │\n│  🌐 Website    github.com/SrivarsanK        │\n└─────────────────────────────────────────────┘".to_string(),
-                });
-            }
+
             "whoami" => {
                 lines.write().push(TerminalLine {
                     id: out_id,
@@ -221,46 +425,7 @@ pub fn Terminal(props: TerminalProps) -> Element {
                     content: now.format("%Y-%m-%d %H:%M:%S").to_string(),
                 });
             }
-            "waifu" => {
-                lines.write().push(TerminalLine {
-                    id: out_id,
-                    line_type: LineType::Info,
-                    content: "Fetching waifu...".to_string(),
-                });
 
-                spawn(async move {
-                    if let Ok(resp) = reqwest::get("https://api.waifu.pics/sfw/waifu").await {
-                        if let Ok(data) = resp.json::<WaifuResponse>().await {
-                            let mut l = lines.write();
-                            if let Some(pos) = l.iter().position(|x| x.id == out_id) {
-                                l[pos] = TerminalLine {
-                                    id: out_id,
-                                    line_type: LineType::Component(rsx! {
-                                        img {
-                                            src: "{data.url}",
-                                            class: "my-2 rounded-lg shadow-lg border border-border max-w-xs"
-                                        }
-                                    }),
-                                    content: "".to_string(),
-                                };
-                            }
-                            drop(l);
-                            scroll_to_bottom();
-                            return;
-                        }
-                    }
-                    let mut l = lines.write();
-                    if let Some(pos) = l.iter().position(|x| x.id == out_id) {
-                        l[pos] = TerminalLine {
-                            id: out_id,
-                            line_type: LineType::Error,
-                            content: "Failed to fetch waifu.".to_string(),
-                        };
-                    }
-                    drop(l);
-                    scroll_to_bottom();
-                });
-            }
             "joke" => {
                 lines.write().push(TerminalLine {
                     id: out_id,
@@ -274,12 +439,15 @@ pub fn Terminal(props: TerminalProps) -> Element {
                             let mut l = lines.write();
                             if let Some(pos) = l.iter().position(|x| x.id == out_id) {
                                 let content_elem = if data.joke_type == "single" {
-                                    rsx! { p { class: "text-foreground/90", "{data.joke.clone().unwrap_or_default()}" } }
+                                    let joke_text = data.joke.as_deref().unwrap_or_default();
+                                    rsx! { p { class: "text-foreground/90", "{joke_text}" } }
                                 } else {
+                                    let setup_text = data.setup.as_deref().unwrap_or_default();
+                                    let delivery_text = data.delivery.as_deref().unwrap_or_default();
                                     rsx! {
                                         div { class: "space-y-2",
-                                            p { class: "text-foreground/90 italic", "\"{data.setup.clone().unwrap_or_default()}\"" }
-                                            p { class: "text-terminal-cyan font-bold", "{data.delivery.clone().unwrap_or_default()}" }
+                                            p { class: "text-foreground/90 italic", "\"{setup_text}\"" }
+                                            p { class: "text-terminal-cyan font-bold", "{delivery_text}" }
                                         }
                                     }
                                 };
@@ -325,14 +493,15 @@ pub fn Terminal(props: TerminalProps) -> Element {
 
     // Watch external_command signal
     use_effect(move || {
-        let cmd = external_cmd.read().clone();
-        if let Some(cmd_str) = cmd {
-            if !cmd_str.is_empty() {
-                execute_command(cmd_str);
-                external_cmd.set(None);
-                if is_minimized() {
-                    is_minimized.set(false);
-                }
+        let should_exec = {
+            let guard = external_cmd.read();
+            guard.as_ref().filter(|s| !s.is_empty()).cloned()
+        };
+        if let Some(cmd_str) = should_exec {
+            execute_command(cmd_str);
+            external_cmd.set(None);
+            if is_minimized() {
+                is_minimized.set(false);
             }
         }
     });
@@ -343,40 +512,15 @@ pub fn Terminal(props: TerminalProps) -> Element {
         scroll_to_bottom();
     });
 
-    // Theme matching
-    let theme_val = current_theme.read().clone();
+    // Theme matching — zero-alloc const lookup
+    let theme = find_theme(&current_theme.read());
     let (bg_color, text_color, prompt_color, prompt_text, border_color, header_bg) =
-        match theme_val.as_str() {
-            "powershell" => (
-                "#012456", "#ffffff", "#ffffff",
-                "PS C:\\Users\\ren> ", "#1a3a6e", "#0a1e4a",
-            ),
-            "ubuntu" => (
-                "#300a24", "#ffffff", "#ffffff",
-                "ren@ubuntu:~$ ", "#5c1345", "#470e35",
-            ),
-            "matrix" => (
-                "#000500", "#00FF41", "#00FF41",
-                "neo@matrix:~$ ", "#003300", "#001a00",
-            ),
-            "cmd" => (
-                "#000000", "#ffffff", "#ffffff",
-                "C:\\Users\\ren> ", "#333333", "#111111",
-            ),
-            "dracula" => (
-                "#282a36", "#f8f8f2", "#bd93f9",
-                "λ ", "#44475a", "#1e2029",
-            ),
-            _ => (
-                "#012456", "#ffffff", "#ffffff",
-                "PS C:\\Users\\ren> ", "#1a3a6e", "#0a1e4a",
-            ),
-        };
+        (theme.bg, theme.text, theme.prompt_color, theme.prompt_text, theme.border, theme.header_bg);
 
     // All known commands for Tab autocomplete
     const ALL_COMMANDS: &[&str] = &[
         "help", "about", "skills", "projects", "contact",
-        "whoami", "date", "waifu", "joke", "clear", "cls",
+        "whoami", "date", "joke", "clear", "cls",
     ];
 
     let handle_key_down = move |e: Event<KeyboardData>| {
@@ -401,8 +545,7 @@ pub fn Terminal(props: TerminalProps) -> Element {
                         current_input.set(matches[0].to_string());
                     } else if matches.len() > 1 {
                         let hint = matches.join("  ");
-                        let id = *next_id.read();
-                        *next_id.write() += 1;
+                        let id = alloc_id(&mut next_id);
                         lines.write().push(TerminalLine {
                             id,
                             line_type: LineType::Info,

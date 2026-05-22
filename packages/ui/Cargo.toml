@@ -16,3 +16,6 @@ serde = { version = "1.0", features = ["derive"] }
 
 [features]
 server = ["api/server"]
+
+[lints]
+workspace = true

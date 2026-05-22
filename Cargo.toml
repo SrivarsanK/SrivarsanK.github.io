@@ -14,3 +14,15 @@ dioxus = { version = "0.7.1" }
 # workspace
 ui = { path = "packages/ui" }
 api = { path = "packages/api" }
+
+[workspace.lints.rust]
+future-incompatible = "warn"
+nonstandard_style = "deny"
+
+[workspace.lints.clippy]
+all = { level = "deny", priority = -1 }
+perf = { level = "deny", priority = -1 }
+redundant_clone = { level = "deny", priority = 0 }
+needless_collect = { level = "warn", priority = 0 }
+large_enum_variant = { level = "warn", priority = 0 }
+clone_on_copy = { level = "deny", priority = 0 }

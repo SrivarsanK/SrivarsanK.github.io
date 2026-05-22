@@ -11,3 +11,6 @@ ui = { workspace = true }
 default = []
 mobile = ["dioxus/mobile"]
 server = ["dioxus/server", "ui/server"]
+
+[lints]
+workspace = true

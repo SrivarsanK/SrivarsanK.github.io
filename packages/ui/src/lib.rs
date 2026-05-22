@@ -23,3 +23,5 @@ pub use desktop_icons::DesktopIcons;
 
 mod terminal;
 pub use terminal::Terminal;
+
+pub mod contact;

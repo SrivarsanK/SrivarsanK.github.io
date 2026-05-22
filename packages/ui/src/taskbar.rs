@@ -53,34 +53,29 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
     let mut current_theme = props.current_theme;
 
     let handle_wallpaper_change = move |_e| {
-        let window = web_sys::window().unwrap();
-        let document = window.document().unwrap();
-        let file_input = document
-            .get_element_by_id("wallpaper-upload-input")
-            .unwrap()
-            .dyn_into::<web_sys::HtmlInputElement>()
-            .unwrap();
-        if let Some(files) = file_input.files() {
-            if let Some(file) = files.get(0) {
-                let reader = web_sys::FileReader::new().unwrap();
-                let reader_clone = reader.clone();
-                let closure = wasm_bindgen::closure::Closure::wrap(Box::new(move |_e: web_sys::Event| {
-                    if let Ok(result) = reader_clone.result() {
-                        if let Some(str_val) = result.as_string() {
-                            wallpaper.set(Some(str_val.clone()));
-                            if let Some(win) = web_sys::window() {
-                                if let Ok(Some(storage)) = win.local_storage() {
-                                    let _ = storage.set_item("terminal-wallpaper", &str_val);
-                                }
-                            }
+        let Some(window) = web_sys::window() else { return };
+        let Some(document) = window.document() else { return };
+        let Some(el) = document.get_element_by_id("wallpaper-upload-input") else { return };
+        let Ok(file_input) = el.dyn_into::<web_sys::HtmlInputElement>() else { return };
+        let Some(files) = file_input.files() else { return };
+        let Some(file) = files.get(0) else { return };
+        let Ok(reader) = web_sys::FileReader::new() else { return };
+        let reader_clone = reader.clone();
+        let closure = wasm_bindgen::closure::Closure::wrap(Box::new(move |_e: web_sys::Event| {
+            if let Ok(result) = reader_clone.result() {
+                if let Some(str_val) = result.as_string() {
+                    if let Some(win) = web_sys::window() {
+                        if let Ok(Some(storage)) = win.local_storage() {
+                            let _ = storage.set_item("terminal-wallpaper", &str_val);
                         }
                     }
-                }) as Box<dyn FnMut(_)>);
-                reader.set_onload(Some(closure.as_ref().unchecked_ref()));
-                closure.forget();
-                let _ = reader.read_as_data_url(&file);
+                    wallpaper.set(Some(str_val));
+                }
             }
-        }
+        }) as Box<dyn FnMut(_)>);
+        reader.set_onload(Some(closure.as_ref().unchecked_ref()));
+        closure.forget();
+        let _ = reader.read_as_data_url(&file);
     };
 
     rsx! {
@@ -132,7 +127,7 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
                                     }
                                     div {
                                         style: "display: flex; flex-direction: column; text-align: left;",
-                                        div { style: "font-size: 0.875rem; font-weight: 600; color: #fff; line-height: 1.25;", "Ovi ren" }
+                                        div { style: "font-size: 0.875rem; font-weight: 600; color: #fff; line-height: 1.25;", "Srivarsan K" }
                                         div { style: "font-size: 0.7rem; color: rgba(255,255,255,0.45); line-height: 1.4; margin-top: 0.125rem;", "Writer • Script Author" }
                                     }
                                 }

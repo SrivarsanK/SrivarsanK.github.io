@@ -29,24 +29,18 @@ const ICONS: &[IconDef] = &[
         // Lucide 'Folder'
         svg_path: "M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z",
     },
-    IconDef {
-        label: "Waifu",
-        command: "waifu",
-        initial_pos: (20, 220),
-        // Lucide 'Ghost'
-        svg_path: "M9 10h.01 M15 10h.01 M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z",
-    },
+
     IconDef {
         label: "Joke",
         command: "joke",
-        initial_pos: (20, 320),
+        initial_pos: (20, 220),
         // Lucide 'Smile'
         svg_path: "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z M8 14s1.5 2 4 2 4-2 4-2 M9 9h.01 M15 9h.01",
     },
     IconDef {
         label: "Recycle Bin",
         command: "clear",
-        initial_pos: (20, 420),
+        initial_pos: (20, 320),
         // Lucide 'Trash2'
         svg_path: "M3 6h18 M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6 M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2 M10 11v6 M14 11v6",
     },
@@ -166,14 +160,13 @@ pub fn DesktopIcons(props: DesktopIconsProps) -> Element {
                             dragging.set(Some((icon.command.to_string(), offset)));
                         },
                         on_double_click: move |cmd: String| {
-                            let cmd_clone = cmd.clone();
                             bouncing_icon.set(Some(cmd.clone()));
                             // Clear bounce after animation completes
                             spawn(async move {
                                 gloo_timers::future::sleep(std::time::Duration::from_millis(350)).await;
                                 bouncing_icon.set(None);
                             });
-                            props.on_icon_click.call(cmd_clone);
+                            props.on_icon_click.call(cmd);
                         }
                     }
                 }
