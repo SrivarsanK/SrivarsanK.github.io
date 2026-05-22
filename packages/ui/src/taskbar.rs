@@ -123,12 +123,12 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
                                     style: "display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; border-radius: 0.375rem; cursor: default; width: 100%; text-align: left;",
                                     div {
                                         style: "width: 2.5rem; height: 2.5rem; border-radius: 50%; background: linear-gradient(135deg, #6e6aca, #8b5cf6); display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff; font-size: 1rem; flex-shrink: 0;",
-                                        "R"
+                                        "S"
                                     }
                                     div {
                                         style: "display: flex; flex-direction: column; text-align: left;",
                                         div { style: "font-size: 0.875rem; font-weight: 600; color: #fff; line-height: 1.25;", "Srivarsan K" }
-                                        div { style: "font-size: 0.7rem; color: rgba(255,255,255,0.45); line-height: 1.4; margin-top: 0.125rem;", "Writer • Script Author" }
+                                        div { style: "font-size: 0.7rem; color: rgba(255,255,255,0.45); line-height: 1.4; margin-top: 0.125rem;", "Software Engineer • Builder" }
                                     }
                                 }
                             }
