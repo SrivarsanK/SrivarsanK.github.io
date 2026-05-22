@@ -1,8 +1,6 @@
 use dioxus::prelude::*;
 use serde::Deserialize;
 use wasm_bindgen::JsCast;
-use std::time::Duration;
-use gloo_timers::future::sleep;
 use crate::contact::ContactForm;
 
 #[derive(Clone)]
