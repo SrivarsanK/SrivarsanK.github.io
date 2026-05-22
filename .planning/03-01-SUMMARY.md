@@ -2,7 +2,8 @@
 
 Completed implementation of the OS taskbar, Start Menu, system tray widgets, theme configurations, wallpaper customizer, and integrated it into the main app lifecycle.
 
-## What was Done:
+## What was Done
+
 1. **Added Dependencies**: Added `web-sys` with `FileReader`, `HtmlInputElement`, `File`, `FileList`, `Storage`, and `Window` features to both `packages/ui` and `packages/web` crates to handle web-based local storage and file uploading.
 2. **Implemented Taskbar Component**: Created `packages/ui/src/taskbar.rs` including:
    - Live date & time clock powered by `chrono` and a Dioxus `use_coroutine` timer loop.

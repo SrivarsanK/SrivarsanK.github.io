@@ -123,6 +123,7 @@
 | CMD-09 | Phase 6 | Pending |
 
 **Coverage:**
+
 - v1 requirements: 38 total
 - Mapped to phases: 38
 - Unmapped: 0 ✓

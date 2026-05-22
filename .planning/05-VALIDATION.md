@@ -5,6 +5,7 @@
 **Requirements:** TERM-01, TERM-02, TERM-03, TERM-04, TERM-05, TERM-06, TERM-07, TERM-08
 
 ### Success Criteria (from ROADMAP.md)
+
 1. Terminal renders in the center of the desktop.
 2. Terminal can be dragged, maximized, minimized, and resized.
 3. Terminal accepts typing input.
@@ -14,6 +15,7 @@
 7. Double-clicking desktop icons auto-runs the corresponding command in the terminal.
 
 ### Testing Strategy
+
 - Compile and run via `dx serve`.
 - Upon reaching the desktop, verify the terminal is visible with the intro prompt.
 - Drag the terminal header to move it.

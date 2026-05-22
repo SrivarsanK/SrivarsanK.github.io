@@ -16,61 +16,75 @@ We are building a highly interactive, simulated OS and terminal experience as a 
 ## Phase Details
 
 ### Phase 1: Foundation
+
 **Goal**: Establish the basic Dioxus 0.7 fullstack structure, styling baseline, and server functions logic if needed.
 **Depends on**: Nothing
 **Requirements**: ARCH-01, ARCH-02, ARCH-03
 **Success Criteria**:
+
   1. The Dioxus app runs without errors via `dx serve`.
   2. Global CSS and component-level styles apply correctly.
 **Plans**: TBD
 
 Plans:
+
 - [x] 01-01: Foundation workspace and global CSS
 
 ### Phase 2: Boot & Login
+
 **Goal**: Create the initial user onboarding flow with a boot animation and lock screen.
 **Depends on**: Phase 1
 **Requirements**: BOOT-01, BOOT-02, BOOT-03, LOG-01, LOG-02, LOG-03, LOG-04
 **Success Criteria**:
+
   1. Users see a simulated text-based BIOS boot sequence.
   2. Users are presented with a login screen showing the current time.
   3. Clicking "Login" shows a spinner and transitions to the desktop state.
 **Plans**: TBD
 
 Plans:
+
 - [x] 02-01: Implement BootSequence and LoginScreen and state machine
 
 ### Phase 3: Taskbar
+
 **Goal**: Build the bottom OS taskbar including Start menu, links, and system tray (clock, theme, wallpaper).
 **Depends on**: Phase 2
 **Requirements**: TASK-01, TASK-02, TASK-03, TASK-04, TASK-05, TASK-06
 **Success Criteria**:
+
   1. A sticky taskbar appears at the bottom.
   2. Start menu opens with user info and pinned links.
   3. Theme and wallpaper controls exist in the tray.
 **Plans**: TBD
 
 Plans:
+
 - [x] 03-01: Implement taskbar, start menu, local storage persistence, theme/wallpaper controls
 
 ### Phase 4: Desktop Environment
+
 **Goal**: Render the main desktop backdrop and interactive icons.
 **Depends on**: Phase 3
 **Requirements**: DESK-01, DESK-02, DESK-03, DESK-04, DESK-05
 **Success Criteria**:
+
   1. Desktop displays the default `frieren.jpg` background.
   2. Icons (About, Projects, Waifu, Joke, Trash) are rendered on the desktop.
   3. Icons can be dragged around via mouse.
 **Plans**: TBD
 
 Plans:
+
 - [ ] 04-01: TBD
 
 ### Phase 5: Terminal Component
+
 **Goal**: Build the core window manager logic and terminal text rendering system.
 **Depends on**: Phase 4
 **Requirements**: TERM-01, TERM-02, TERM-03, TERM-04, TERM-05, TERM-06, TERM-07, TERM-08
 **Success Criteria**:
+
   1. A window can be dragged by its header and resized.
   2. Terminal displays output history and accepts text input.
   3. Terminal auto-scrolls when new text appears.
@@ -78,19 +92,23 @@ Plans:
 **Plans**: TBD
 
 Plans:
+
 - [ ] 05-01: TBD
 
 ### Phase 6: Terminal Commands
+
 **Goal**: Wire up the interactive commands that provide the actual portfolio content.
 **Depends on**: Phase 5
 **Requirements**: CMD-01, CMD-02, CMD-03, CMD-04, CMD-05, CMD-06, CMD-07, CMD-08, CMD-09
 **Success Criteria**:
+
   1. `help`, `about`, `skills`, `projects`, and `contact` return correct static text.
   2. `clear` wipes the terminal history.
   3. `waifu` and `joke` fetch data from external APIs and render correctly.
 **Plans**: TBD
 
 Plans:
+
 - [ ] 06-01: TBD
 
 ## Progress

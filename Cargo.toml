@@ -5,7 +5,8 @@ members = [
     "packages/web",
     "packages/desktop",
     "packages/mobile",
-    "packages/api",
+    "packages/shared",
+    "api",
 ]
 
 [workspace.dependencies]
@@ -13,7 +14,7 @@ dioxus = { version = "0.7.1" }
 
 # workspace
 ui = { path = "packages/ui" }
-api = { path = "packages/api" }
+shared = { path = "packages/shared" }
 
 [workspace.lints.rust]
 future-incompatible = "warn"

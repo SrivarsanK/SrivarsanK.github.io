@@ -1,0 +1,18 @@
+[package]
+name = "api-contact"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "contact"
+path = "contact.rs"
+
+[dependencies]
+vercel_runtime = "2"
+tokio = { version = "1.36", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+reqwest = { version = "0.12", features = ["json"] }
+shared = { path = "../packages/shared" }
+http = "1"
+http-body-util = "0.1"

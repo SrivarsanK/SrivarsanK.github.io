@@ -22,14 +22,32 @@ pub fn ContactForm() -> Element {
             return;
         }
 
-        let form_data = api::ContactForm {
+        let form_data = shared::ContactForm {
             name: name(),
             email: email(),
             subject: subject(),
             message: message(),
         };
 
-        match api::send_contact_email(form_data).await {
+        let client = reqwest::Client::new();
+        let res = client.post("/api/contact")
+            .json(&form_data)
+            .send()
+            .await;
+
+        let result = match res {
+            Ok(response) => {
+                if response.status().is_success() {
+                    Ok(())
+                } else {
+                    let text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
+                    Err(text)
+                }
+            }
+            Err(e) => Err(e.to_string()),
+        };
+
+        match result {
             Ok(_) => {
                 *submission_status.write() = Some("Message sent successfully!".to_string());
                 *name.write() = String::new();

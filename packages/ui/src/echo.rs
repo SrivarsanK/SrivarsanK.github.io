@@ -14,9 +14,8 @@ pub fn Echo() -> Element {
             h4 { "ServerFn Echo" }
             input {
                 placeholder: "Type here to echo...",
-                oninput:  move |event| async move {
-                    let data = api::echo(event.value()).await.unwrap_or_default();
-                    response.set(data);
+                oninput:  move |event| {
+                    response.set(event.value());
                 },
             }
 

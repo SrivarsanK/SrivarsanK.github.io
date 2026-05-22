@@ -35,10 +35,10 @@ struct ThemeColors {
 }
 
 const THEME_PRESETS: &[ThemeColors] = &[
-    ThemeColors { id: "powershell", bg: "#012456", text: "#ffffff", prompt_color: "#ffffff", prompt_text: "PS C:\\Users\\ren> ", border: "#1a3a6e", header_bg: "#0a1e4a" },
-    ThemeColors { id: "ubuntu", bg: "#300a24", text: "#ffffff", prompt_color: "#ffffff", prompt_text: "ren@ubuntu:~$ ", border: "#5c1345", header_bg: "#470e35" },
+    ThemeColors { id: "powershell", bg: "#012456", text: "#ffffff", prompt_color: "#ffffff", prompt_text: "PS C:\\Users\\Srivarsan> ", border: "#1a3a6e", header_bg: "#0a1e4a" },
+    ThemeColors { id: "ubuntu", bg: "#300a24", text: "#ffffff", prompt_color: "#ffffff", prompt_text: "Srivarsan@ubuntu:~$ ", border: "#5c1345", header_bg: "#470e35" },
     ThemeColors { id: "matrix", bg: "#000500", text: "#00FF41", prompt_color: "#00FF41", prompt_text: "neo@matrix:~$ ", border: "#003300", header_bg: "#001a00" },
-    ThemeColors { id: "cmd", bg: "#000000", text: "#ffffff", prompt_color: "#ffffff", prompt_text: "C:\\Users\\ren> ", border: "#333333", header_bg: "#111111" },
+    ThemeColors { id: "cmd", bg: "#000000", text: "#ffffff", prompt_color: "#ffffff", prompt_text: "C:\\Users\\Srivarsan> ", border: "#333333", header_bg: "#111111" },
     ThemeColors { id: "dracula", bg: "#282a36", text: "#f8f8f2", prompt_color: "#bd93f9", prompt_text: "λ ", border: "#44475a", header_bg: "#1e2029" },
 ];
 
@@ -72,7 +72,7 @@ struct JokeResponse {
 }
 
 const WELCOME_MESSAGE: &str = r#"Hello, World! I'm Srivarsan K
-I'm a writer, i write scripts.
+I'm a software engineer, I build applications.
 
 Type 'help' to see available commands."#;
 
@@ -96,6 +96,17 @@ fn scroll_to_bottom() {
             }
         }
     }
+}
+
+pub fn is_mobile_screen() -> bool {
+    if let Some(win) = web_sys::window() {
+        if let Ok(width) = win.inner_width() {
+            if let Some(w) = width.as_f64() {
+                return w <= 768.0;
+            }
+        }
+    }
+    false
 }
 
 #[component]
@@ -122,11 +133,7 @@ pub fn Terminal(props: TerminalProps) -> Element {
     // Animation state: "open", "minimize", "restore", "idle"
     let mut anim_state = use_signal(|| "open".to_string());
 
-    let mut pos = use_signal(|| (100.0_f64, 60.0_f64));
-    let mut size = use_signal(|| (760.0_f64, 460.0_f64));
-
-    // Center terminal on first mount
-    use_effect(move || {
+    let (initial_pos, initial_size) = {
         if let Some(win) = web_sys::window() {
             let w = win
                 .inner_width()
@@ -138,14 +145,26 @@ pub fn Terminal(props: TerminalProps) -> Element {
                 .unwrap_or(wasm_bindgen::JsValue::from(720))
                 .as_f64()
                 .unwrap_or(720.0);
-            let term_w = 760.0_f64.min(w - 120.0);
-            let term_h = 460.0_f64.min(h - 100.0);
-            let x = ((w - term_w) / 2.0).max(20.0);
-            let y = ((h - 40.0 - term_h) / 2.0).max(20.0);
-            pos.set((x, y));
-            size.set((term_w, term_h));
+            
+            if is_mobile_screen() {
+                // Mobile layout: almost full screen width, center it
+                let term_w = w - 16.0;
+                let term_h = h - 140.0;
+                ((8.0, 20.0), (term_w, term_h))
+            } else {
+                let term_w = 760.0_f64.min(w - 32.0);
+                let term_h = 460.0_f64.min(h - 160.0);
+                let x = ((w - term_w) / 2.0).max(0.0);
+                let y = ((h - 48.0 - term_h) / 2.0).max(120.0);
+                ((x, y), (term_w, term_h))
+            }
+        } else {
+            ((100.0, 60.0), (760.0, 460.0))
         }
-    });
+    };
+
+    let mut pos = use_signal(|| initial_pos);
+    let mut size = use_signal(|| initial_size);
 
     let mut dragging_header = use_signal(|| None::<(f64, f64)>);
     let mut resizing = use_signal(|| None::<(f64, f64, f64, f64)>);
@@ -414,7 +433,7 @@ pub fn Terminal(props: TerminalProps) -> Element {
                 lines.write().push(TerminalLine {
                     id: out_id,
                     line_type: LineType::Output,
-                    content: "ren@portfolio".to_string(),
+                    content: "Srivarsan@portfolio".to_string(),
                 });
             }
             "date" => {
@@ -514,6 +533,13 @@ pub fn Terminal(props: TerminalProps) -> Element {
 
     // Theme matching — zero-alloc const lookup
     let theme = find_theme(&current_theme.read());
+    let theme_cap = {
+        let mut c = theme.id.chars();
+        match c.next() {
+            None => String::new(),
+            Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
+        }
+    };
     let (bg_color, text_color, prompt_color, prompt_text, border_color, header_bg) =
         (theme.bg, theme.text, theme.prompt_color, theme.prompt_text, theme.border, theme.header_bg);
 
@@ -618,7 +644,7 @@ pub fn Terminal(props: TerminalProps) -> Element {
                 }
                 span {
                     style: "font-size: 0.75rem; font-family: monospace; color: {text_color};",
-                    "Terminal — Guest@Portfolio"
+                    "{theme_cap} — Srivarsan@Portfolio"
                 }
             }
         };
@@ -662,12 +688,29 @@ pub fn Terminal(props: TerminalProps) -> Element {
     let border_radius = if is_maximized() { "0" } else { "0.5rem" };
 
     let transition_style = if dragging_header().is_some() || resizing().is_some() {
-        "transition: none;"
+        "transition: none !important;"
     } else {
         "transition: width 300ms cubic-bezier(0.4, 0, 0.2, 1), height 300ms cubic-bezier(0.4, 0, 0.2, 1), top 300ms cubic-bezier(0.4, 0, 0.2, 1), left 300ms cubic-bezier(0.4, 0, 0.2, 1), border-radius 300ms ease;"
     };
 
+    let overlay_move = handle_pointer_move.clone();
+    let overlay_up = handle_pointer_up.clone();
+    let cursor_style = if resizing().is_some() {
+        "nwse-resize"
+    } else if dragging_header().is_some() {
+        "move"
+    } else {
+        "default"
+    };
+
+    let overlay_display = if dragging_header().is_some() || resizing().is_some() { "block" } else { "none" };
+
     rsx! {
+        div {
+            style: "position: fixed; inset: 0; z-index: 100; display: {overlay_display}; cursor: {cursor_style}; background: transparent; user-select: none; -webkit-user-select: none;",
+            onpointermove: overlay_move,
+            onpointerup: overlay_up,
+        }
         div {
             class: "{anim_class}",
             style: "
@@ -676,6 +719,8 @@ pub fn Terminal(props: TerminalProps) -> Element {
                 left: {left_style};
                 width: {width_style};
                 height: {height_style};
+                max-width: 100vw;
+                max-height: calc(100dvh - 48px);
                 z-index: 40;
                 border: 1px solid {border_color};
                 border-radius: {border_radius};
@@ -692,7 +737,6 @@ pub fn Terminal(props: TerminalProps) -> Element {
             },
             onpointermove: handle_pointer_move,
             onpointerup: handle_pointer_up,
-            onpointerleave: handle_pointer_up,
 
             // ─── Title Bar ────────────────────────────────────────────────
             div {
@@ -721,6 +765,7 @@ pub fn Terminal(props: TerminalProps) -> Element {
                 div {
                     style: "display: flex; align-items: center; gap: 6px;",
                     onclick: move |e| e.stop_propagation(),
+                    onpointerdown: move |e| e.stop_propagation(),
 
                     // Red = close (acts as minimize here like macOS)
                     div {
@@ -731,10 +776,9 @@ pub fn Terminal(props: TerminalProps) -> Element {
                             e.stop_propagation();
                             anim_state.set("minimize".to_string());
                             let mut is_min_clone = is_minimized.clone();
-                            spawn(async move {
-                                sleep(Duration::from_millis(300)).await;
+                            gloo_timers::callback::Timeout::new(300, move || {
                                 is_min_clone.set(true);
-                            });
+                            }).forget();
                         }
                     }
                     // Yellow = minimize (acts as restore/maximize)
@@ -762,7 +806,7 @@ pub fn Terminal(props: TerminalProps) -> Element {
                 // Centered title
                 span {
                     style: "font-size: 0.7rem; font-family: monospace; color: {text_color}; opacity: 0.75; position: absolute; left: 50%; transform: translateX(-50%);",
-                    "Terminal — Guest@Portfolio:~"
+                    "{theme_cap} — Srivarsan@Portfolio:~"
                 }
 
                 // Right spacer to balance traffic lights
@@ -780,7 +824,7 @@ pub fn Terminal(props: TerminalProps) -> Element {
                     overflow-y: auto;
                     padding: 0.75rem 1rem 0.5rem 1rem;
                     font-family: 'JetBrains Mono', 'Fira Code', monospace;
-                    font-size: 0.8125rem;
+                    font-size: clamp(0.7rem, 2vw + 0.4rem, 0.85rem);
                     line-height: 1.6;
                     min-height: 0;
                     scrollbar-width: thin;
@@ -792,10 +836,10 @@ pub fn Terminal(props: TerminalProps) -> Element {
                     div {
                         key: "{line.id}",
                         style: match &line.line_type {
-                            LineType::Error   => "color: #f87171; white-space: pre-wrap; margin-bottom: 2px;",
-                            LineType::Success  => "color: #4ade80; white-space: pre-wrap; margin-bottom: 2px;",
-                            LineType::Info     => "color: #67e8f9; white-space: pre-wrap; margin-bottom: 2px;",
-                            _                  => "white-space: pre-wrap; margin-bottom: 2px;",
+                            LineType::Error   => "color: #f87171; white-space: pre-wrap; word-break: break-word; margin-bottom: 2px;",
+                            LineType::Success  => "color: #4ade80; white-space: pre-wrap; word-break: break-word; margin-bottom: 2px;",
+                            LineType::Info     => "color: #67e8f9; white-space: pre-wrap; word-break: break-word; margin-bottom: 2px;",
+                            _                  => "white-space: pre-wrap; word-break: break-word; margin-bottom: 2px;",
                         },
                         match &line.line_type {
                             LineType::Input => {
@@ -834,7 +878,7 @@ pub fn Terminal(props: TerminalProps) -> Element {
                 onclick: move |_| focus_input(),
 
                 span {
-                    style: "color: {prompt_color}; margin-right: 0.4rem; flex-shrink: 0; white-space: nowrap; font-family: monospace; font-size: 0.8125rem;",
+                    style: "color: {prompt_color}; margin-right: 0.4rem; flex-shrink: 0; white-space: nowrap; font-family: monospace; font-size: clamp(0.7rem, 2vw + 0.4rem, 0.85rem);",
                     "{prompt_text}"
                 }
                 input {
@@ -851,7 +895,7 @@ pub fn Terminal(props: TerminalProps) -> Element {
                         border: none;
                         color: {text_color};
                         font-family: 'JetBrains Mono', 'Fira Code', monospace;
-                        font-size: 0.8125rem;
+                        font-size: clamp(0.7rem, 2vw + 0.4rem, 0.85rem);
                         caret-color: {prompt_color};
                         padding: 0;
                     ",

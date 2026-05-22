@@ -1,12 +1,15 @@
 # Phase 4: Desktop Environment - Research
 
 ## Domain Knowledge
+
 This phase ports `DesktopIcons.tsx` and sets up the interactive desktop backdrop in `Index.tsx`.
+
 - **DesktopIcons**: Renders the icons for "About Me", "Projects", "Waifu", "Joke", and "Recycle Bin".
 - **DesktopIcon**: A draggable icon. It can be dragged around the desktop container. A double-click on any icon executes its corresponding action (which sends a command to the terminal).
 - **Draggability**: Dragging must be smooth. In React, this is achieved by registering `mousemove` and `mouseup` event listeners on the `window` when dragging starts.
 
 ## Technical Approach (Dioxus 0.7)
+
 1. **Desktop Icons Representation**:
    - Create `packages/ui/src/desktop_icons.rs`.
    - Define a struct/enum representing each desktop icon (label, command/action, icon SVG/path, position).
@@ -25,6 +28,7 @@ This phase ports `DesktopIcons.tsx` and sets up the interactive desktop backdrop
    - Style them using modern, transparent glassy overlays (`backdrop-blur-sm`, `bg-blue-500/20`, etc.).
 
 ## Validation Architecture
+
 - Verify icons render at their initial coordinates on the desktop.
 - Verify clicking and dragging moves the icon across the screen.
 - Verify releasing the mouse button stops dragging and leaves the icon at the new position.

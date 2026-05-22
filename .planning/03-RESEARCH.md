@@ -1,7 +1,9 @@
 # Phase 3: Taskbar - Research
 
 ## Domain Knowledge
+
 In this phase, we implement the bottom taskbar of the OS environment. In `tfish`, the taskbar resides in a `<footer>` element and contains:
+
 1. **Start Button & Start Menu**: Shows user details (Ovi ren), pinned links (GitHub, Email), a "Log out" button, and a "Reset" button (with confirmation dialog).
 2. **System Tray**:
    - Wallpaper uploader (triggers local file upload).
@@ -9,6 +11,7 @@ In this phase, we implement the bottom taskbar of the OS environment. In `tfish`
 3. **System Clock**: Ticking date and time display.
 
 ## Technical Approach (Dioxus 0.7)
+
 1. **Layout & Primitives**:
    - Instead of shadcn/ui (which uses Radix UI and Tailwind), we will use custom vanilla CSS and Dioxus signals.
    - **Start Menu**: Toggled with `use_signal(|| false)`. Rendered as an absolute div anchored above the Start button.
@@ -24,6 +27,7 @@ In this phase, we implement the bottom taskbar of the OS environment. In `tfish`
    - Icons needed: `LayoutGrid` (Start), `Github`, `Mail`, `LogOut`, `ImageIcon` (Wallpaper), `Palette` (Theme).
 
 ## Validation Architecture
+
 - Verify clicking the Start button opens and closes the Start menu.
 - Verify clicking Pinned links redirects properly.
 - Verify clicking "Log out" returns the state to `Login`.

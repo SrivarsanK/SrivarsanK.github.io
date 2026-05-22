@@ -697,3 +697,10 @@ body {
   justify-content: center;
   border-radius: 50%;
 }
+
+/* ---- RESPONSIVE UTILITIES ---- */
+@media (max-width: 768px) {
+  .hidden-mobile {
+    display: none !important;
+  }
+}

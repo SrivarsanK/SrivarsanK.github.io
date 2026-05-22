@@ -5,11 +5,13 @@
 **Requirements:** DESK-01, DESK-02, DESK-03, DESK-04, DESK-05
 
 ### Success Criteria (from ROADMAP.md)
+
 1. Desktop displays the default `frieren.jpg` background (or user-uploaded wallpaper).
 2. Icons (About, Projects, Waifu, Joke, Trash) are rendered on the desktop.
 3. Icons can be dragged around via mouse.
 
 ### Testing Strategy
+
 - Compile and run via `dx serve`.
 - Verify desktop renders all 5 icons at their correct start positions:
   - About Me: `(20, 20)`

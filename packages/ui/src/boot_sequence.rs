@@ -3,7 +3,7 @@ use gloo_timers::future::sleep;
 use std::time::Duration;
 
 const BOOT_TEXT: &[&str] = &[
-    "Ren BIOS v1.0.4 (C) 2024-2026",
+    "SOS BIOS v2.1.0 (C) 2026",
     "CPU: Intel(R) Coffee Powered @ 4.20GHz",
     "Memory Test: 32768MB OK",
     "",
@@ -47,13 +47,13 @@ pub fn BootSequence(on_complete: EventHandler<()>) -> Element {
             div {
                 class: "text-white mb-4 sm:mb-8 w-full overflow-hidden boot-logo-enter",
                 pre {
-                    class: "text-[8px] leading-[8px] sm:text-xs",
+                    class: "text-[16px] leading-[16px] sm:text-[32px] sm:leading-[32px] font-bold text-terminal-cyan",
                     r#"
-   ____                 ___  ____  
-  |  _ \ ___ _ __      / _ \/ ___| 
-  | |_) / _ \ '_ \    | | | \___ \ 
-  |  _ <  __/ | | |   | |_| |___) |
-  |_| \_\___|_| |_|    \___/|____/ 
+   ____   ___  ____  
+  / ___| / _ \/ ___| 
+  \___ \| | | \___ \ 
+   ___) | |_| |___) |
+  |____/ \___/|____/ 
 "#
                 }
             }

@@ -87,7 +87,7 @@ pub fn LoginScreen(props: LoginScreenProps) -> Element {
                         style: "width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(59,130,246,0.6), rgba(168,85,247,0.6)); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);",
                         span {
                             style: "font-size: 5rem; font-weight: 700; color: white; letter-spacing: -0.05em; text-shadow: 0 4px 20px rgba(0,0,0,0.3);",
-                            "R"
+                            "S"
                         }
                     }
                 }
@@ -99,7 +99,7 @@ pub fn LoginScreen(props: LoginScreenProps) -> Element {
 
                     h1 {
                         style: "font-size: 1.875rem; font-weight: 600; color: white; margin-bottom: 0.5rem; text-shadow: 0 2px 10px rgba(0,0,0,0.3);",
-                        "Ren"
+                        "Srivarsan"
                     }
 
                     // Login button / spinner
@@ -120,8 +120,8 @@ pub fn LoginScreen(props: LoginScreenProps) -> Element {
                     } else {
                         button {
                             onclick: handle_login,
-                            class: "group btn-press",
-                            style: "margin-top: 1rem; display: flex; align-items: center; gap: 0.75rem; background: rgba(255,255,255,0.1); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.2); padding: 0.75rem 2rem; border-radius: 0.375rem; cursor: pointer; transition: all 0.2s ease; color: white; font-weight: 500; font-size: 1rem;",
+                            class: "group hover:scale-105 active:scale-95",
+                            style: "margin-top: 1.5rem; display: flex; align-items: center; gap: 0.75rem; background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05)); backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); border: 1px solid rgba(255,255,255,0.2); border-top: 1px solid rgba(255,255,255,0.5); border-left: 1px solid rgba(255,255,255,0.4); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.4); padding: 0.75rem 2.5rem; border-radius: 0.375rem; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: white; font-weight: 600; font-size: 1rem; letter-spacing: 0.05em; text-shadow: 0 1px 2px rgba(0,0,0,0.2);",
                             span { "Login" }
                             svg {
                                 xmlns: "http://www.w3.org/2000/svg",

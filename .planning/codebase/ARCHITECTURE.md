@@ -2,7 +2,7 @@
 
 ## Workspace Structure
 
-```
+```text
 portfolio/
 ├── Cargo.toml              # Workspace root
 ├── packages/
@@ -24,7 +24,7 @@ portfolio/
 
 ## Dependency Graph
 
-```
+```text
 web ──→ ui ──→ api
          │      │
          │      └── dioxus (fullstack)
@@ -55,4 +55,4 @@ web ──→ ui ──→ api
 - Props via function arguments (e.g., `children: Element`, `id: i32`)
 
 ---
-*Mapped: 2026-05-20*
+Mapped: 2026-05-20

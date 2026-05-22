@@ -44,6 +44,13 @@ const ICONS: &[IconDef] = &[
         // Lucide 'Trash2'
         svg_path: "M3 6h18 M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6 M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2 M10 11v6 M14 11v6",
     },
+    IconDef {
+        label: "Contact Me",
+        command: "contact",
+        initial_pos: (20, 420),
+        // Lucide 'Mail'
+        svg_path: "M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z M22 6l-10 7L2 6",
+    },
 ];
 
 #[component]
@@ -112,8 +119,37 @@ fn DesktopIcon(
 pub fn DesktopIcons(props: DesktopIconsProps) -> Element {
     let mut positions = use_signal(|| {
         let mut map = HashMap::new();
+        let w = web_sys::window()
+            .and_then(|win| win.inner_width().ok())
+            .and_then(|w| w.as_f64())
+            .unwrap_or(1280.0);
+        let h = web_sys::window()
+            .and_then(|win| win.inner_height().ok())
+            .and_then(|h| h.as_f64())
+            .unwrap_or(720.0);
+            
+        let is_mobile = w < 600.0;
+        let mut current_x = 20;
+        let mut current_y = 20;
+        let icon_spacing_y = 100;
+        let icon_spacing_x = 80;
+
         for icon in ICONS {
-            map.insert(icon.command.to_string(), icon.initial_pos);
+            if is_mobile {
+                if current_x + icon_spacing_x > (w as i32 - 20) && current_x > 20 {
+                    current_y += icon_spacing_y;
+                    current_x = 20;
+                }
+                map.insert(icon.command.to_string(), (current_x, current_y));
+                current_x += icon_spacing_x;
+            } else {
+                if current_y + icon_spacing_y > (h as i32 - 40) && current_y > 20 {
+                    current_x += icon_spacing_x;
+                    current_y = 20;
+                }
+                map.insert(icon.command.to_string(), (current_x, current_y));
+                current_y += icon_spacing_y;
+            }
         }
         map
     });
@@ -137,13 +173,15 @@ pub fn DesktopIcons(props: DesktopIconsProps) -> Element {
 
     let is_dragging = dragging.read().is_some();
     let container_pointer = if is_dragging { "pointer-events-auto" } else { "pointer-events-none" };
+    let current_positions = positions.read().clone();
+    let current_dragging = dragging.read().clone();
+    let current_bouncing = bouncing_icon.read().clone();
 
     rsx! {
         div {
-            class: "absolute inset-0 z-0",
+            class: "absolute inset-0 z-0 hidden-mobile",
             onpointermove: handle_pointer_move,
             onpointerup: handle_pointer_up,
-            onpointerleave: handle_pointer_up,
             div {
                 class: "relative w-full h-full {container_pointer}",
                 for (idx, icon) in ICONS.iter().enumerate() {
@@ -151,22 +189,24 @@ pub fn DesktopIcons(props: DesktopIconsProps) -> Element {
                         key: "{icon.command}",
                         label: icon.label.to_string(),
                         command: icon.command.to_string(),
-                        pos: *positions.read().get(icon.command).unwrap_or(&icon.initial_pos),
+                        pos: *current_positions.get(icon.command).unwrap_or(&icon.initial_pos),
                         index: idx,
-                        is_dragging: dragging.read().as_ref().map(|(c, _)| c == icon.command).unwrap_or(false),
-                        is_bouncing: bouncing_icon.read().as_ref().map(|c| c == icon.command).unwrap_or(false),
+                        is_dragging: current_dragging.as_ref().map(|(c, _)| c == icon.command).unwrap_or(false),
+                        is_bouncing: current_bouncing.as_ref().map(|c| c == icon.command).unwrap_or(false),
                         svg_path: icon.svg_path.to_string(),
                         on_pointer_down: move |offset| {
                             dragging.set(Some((icon.command.to_string(), offset)));
                         },
                         on_double_click: move |cmd: String| {
                             bouncing_icon.set(Some(cmd.clone()));
-                            // Clear bounce after animation completes
+                            // Call icon click immediately
+                            props.on_icon_click.call(cmd);
+                            // Clear bounce after animation completes in a detached task
+                            let mut bounce_sig = bouncing_icon;
                             spawn(async move {
                                 gloo_timers::future::sleep(std::time::Duration::from_millis(350)).await;
-                                bouncing_icon.set(None);
+                                bounce_sig.set(None);
                             });
-                            props.on_icon_click.call(cmd);
                         }
                     }
                 }

@@ -5,11 +5,13 @@
 **Requirements:** TASK-01, TASK-02, TASK-03, TASK-04, TASK-05, TASK-06
 
 ### Success Criteria (from ROADMAP.md)
+
 1. A sticky taskbar appears at the bottom.
 2. Start menu opens with user info and pinned links.
 3. Theme and wallpaper controls exist in the tray.
 
 ### Testing Strategy
+
 - Compile and run via `dx serve`.
 - Once logged in, check that the taskbar is stickily anchored to the bottom.
 - Click the Start button. Verify the Start menu pops up.

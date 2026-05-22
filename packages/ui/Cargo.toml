@@ -5,17 +5,16 @@ edition = "2021"
 
 [dependencies]
 dioxus = { workspace = true }
-api = { workspace = true }
+shared = { workspace = true }
 chrono = { version = "0.4.44", features = ["wasmbind"] }
 gloo-timers = { version = "0.4.0", features = ["futures"] }
-web-sys = { version = "0.3.98", features = ["FileReader", "HtmlInputElement", "HtmlElement", "File", "FileList", "Storage", "Window", "Document", "Element"] }
+web-sys = { version = "0.3.98", features = ["FileReader", "HtmlInputElement", "HtmlElement", "File", "FileList", "Storage", "Window", "Document", "Element", "Event"] }
 wasm-bindgen = "0.2.121"
 js-sys = "0.3.98"
 reqwest = { version = "0.12.3", features = ["json"] }
 serde = { version = "1.0", features = ["derive"] }
 
 [features]
-server = ["api/server"]
 
 [lints]
 workspace = true
