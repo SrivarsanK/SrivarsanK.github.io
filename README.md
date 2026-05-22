@@ -85,6 +85,17 @@ portfolio/
 
 ---
 
+## 🌐 Deployment
+
+This project is configured to build and deploy to **Vercel** with support for both the WebAssembly static frontend and Rust serverless functions:
+
+- **Build Command**: `bash vercel-build.sh`
+- **Output Directory**: `target/dx/web/release/web/public`
+- **Required Environment Variables**:
+  - `RESEND_API_KEY`: Your Resend API key (needed by the contact form API).
+
+---
+
 ## 💡 Why Rust for a Web UI?
 
 Using Rust and Dioxus provides incredible memory safety, strong typing, and minimal overhead. Unlike heavy JavaScript frameworks, this web OS compiles to a lean WASM binary, allowing us to manage complex state (like overlapping windows, dragging coordinates, and terminal buffers) with zero fear of runtime type errors.
