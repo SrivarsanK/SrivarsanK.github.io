@@ -67,7 +67,7 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
                 if let Some(str_val) = result.as_string() {
                     if let Some(win) = web_sys::window() {
                         if let Ok(Some(storage)) = win.local_storage() {
-                            let _ = storage.set_item("terminal-wallpaper", &str_val);
+                            let _ = storage.set_item("desktop-bg", &str_val);
                         }
                     }
                     wallpaper.set(Some(str_val));
@@ -293,7 +293,7 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
                                     wallpaper.set(Some(bg_url.clone()));
                                     if let Some(win) = web_sys::window() {
                                         if let Ok(Some(storage)) = win.local_storage() {
-                                            let _ = storage.set_item("terminal-wallpaper", &bg_url);
+                                            let _ = storage.set_item("desktop-bg", &bg_url);
                                         }
                                     }
                                     is_wallpaper_open.set(false);
@@ -307,7 +307,7 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
                                     wallpaper.set(None);
                                     if let Some(win) = web_sys::window() {
                                         if let Ok(Some(storage)) = win.local_storage() {
-                                            let _ = storage.remove_item("terminal-wallpaper");
+                                            let _ = storage.remove_item("desktop-bg");
                                         }
                                     }
                                     is_wallpaper_open.set(false);
@@ -322,7 +322,7 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
                                     wallpaper.set(Some(bg_url.clone()));
                                     if let Some(win) = web_sys::window() {
                                         if let Ok(Some(storage)) = win.local_storage() {
-                                            let _ = storage.set_item("terminal-wallpaper", &bg_url);
+                                            let _ = storage.set_item("desktop-bg", &bg_url);
                                         }
                                     }
                                     is_wallpaper_open.set(false);

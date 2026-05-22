@@ -32,7 +32,7 @@ fn App() -> Element {
     use_effect(move || {
         if let Some(win) = web_sys::window() {
             if let Ok(Some(storage)) = win.local_storage() {
-                if let Ok(Some(saved_wallpaper)) = storage.get_item("terminal-wallpaper") {
+                if let Ok(Some(saved_wallpaper)) = storage.get_item("desktop-bg") {
                     if saved_wallpaper == "/assets/frieren.jpg" {
                         wallpaper.set(Some(FRIEREN_BG.to_string()));
                     } else if saved_wallpaper == "/assets/gargantua.jpg" {
