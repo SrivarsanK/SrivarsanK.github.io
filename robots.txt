@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://srivarsank.github.io/sitemap.xml
