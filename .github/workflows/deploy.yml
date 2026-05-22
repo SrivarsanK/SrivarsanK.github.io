@@ -34,8 +34,11 @@ jobs:
         with:
           shared-Key: "dioxus-web"
 
+      - name: Install cargo-binstall
+        uses: taiki-e/install-action@cargo-binstall
+
       - name: Install Dioxus CLI
-        run: cargo install dioxus-cli --version 0.7.9 --locked
+        run: cargo binstall dioxus-cli --version 0.7.9 -y --locked
 
       - name: Build Dioxus Web App
         run: dx build --release --platform web --package web
