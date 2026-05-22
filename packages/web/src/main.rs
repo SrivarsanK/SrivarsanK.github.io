@@ -61,7 +61,7 @@ fn App() -> Element {
 
     let desktop_style = match wallpaper() {
         Some(w) => format!("background-image: url('{}'); background-size: cover; background-position: center; background-repeat: no-repeat;", w),
-        None => "background-color: #000;".to_string(),
+        None => "background-image: none; background-color: #000;".to_string(),
     };
 
     rsx! {

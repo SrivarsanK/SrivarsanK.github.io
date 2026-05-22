@@ -46,7 +46,7 @@ pub fn LoginScreen(props: LoginScreenProps) -> Element {
             "background-image: url('{}'); background-size: cover; background-position: center;",
             w
         ),
-        None => "background-color: #000;".to_string(),
+        None => "background-image: none; background-color: #000;".to_string(),
     };
 
     let exit_class = if is_exiting() { "login-exit" } else { "" };
