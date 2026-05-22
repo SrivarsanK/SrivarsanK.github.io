@@ -1,30 +1,40 @@
 #!/bin/bash
 set -e
 
-# Use Vercel's persistent cache directory
 CACHE_DIR=".vercel/cache"
 DX_CACHE="$CACHE_DIR/dx-cache"
-CARGO_CACHE="$CACHE_DIR/cargo"
+WASM_TARGET_CACHE="$CACHE_DIR/wasm-target"
 
-# Cache cargo registry + index between deploys
-export CARGO_HOME="$CARGO_CACHE"
-mkdir -p "$DX_CACHE/bin" "$CARGO_CACHE"
-export PATH="$DX_CACHE/bin:$CARGO_HOME/bin:$PATH"
+export CARGO_HOME="$CACHE_DIR/cargo"
+export PATH="$DX_CACHE/bin:$PATH"
 
-# Wasm target
 rustup target add wasm32-unknown-unknown
 
-# dx: use cached binary or compile once
-if command -v dx >/dev/null 2>&1 && dx --version >/dev/null 2>&1; then
-    echo "=== Using cached dx: $(dx --version) ==="
+# Install dx only if not cached
+if ! command -v dx &> /dev/null; then
+    echo "=== No cached dx found. Installing... ==="
+    mkdir -p "$DX_CACHE/bin"
+    cargo install dioxus-cli \
+        --version 0.7.9 \
+        --root "$DX_CACHE" \
+        --locked \
+        --debug   # <-- much faster, fine for a build tool
 else
-    echo "=== No cached dx found. Compiling (first deploy only)... ==="
-    cargo install dioxus-cli --version 0.7.9 --locked --root "$DX_CACHE"
-    echo "=== Installed: $(dx --version) ==="
+    echo "=== Using cached dx: $(dx --version) ==="
 fi
 
-# Build app
-echo "=== Building Dioxus Web App ==="
-dx build --release --platform web -p web
+# Restore wasm target cache
+if [ -d "$WASM_TARGET_CACHE" ]; then
+    echo "=== Restoring wasm target cache ==="
+    cp -r "$WASM_TARGET_CACHE" target
+fi
 
-echo "=== Build finished! ==="
+dx build --release --platform web
+
+# Save wasm target cache (only the wasm-specific parts, not all of target/)
+echo "=== Saving wasm target cache ==="
+mkdir -p "$WASM_TARGET_CACHE"
+# Cache only the wasm32 incremental build artifacts
+if [ -d "target/wasm32-unknown-unknown" ]; then
+    cp -r target/wasm32-unknown-unknown "$WASM_TARGET_CACHE/"
+fi
