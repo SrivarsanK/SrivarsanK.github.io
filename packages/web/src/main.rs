@@ -70,6 +70,17 @@ fn App() -> Element {
         document::Link { rel: "icon", href: FAVICON }
         document::Link { rel: "stylesheet", href: MAIN_CSS }
 
+        document::Meta { name: "description", content: "Srivarsan's interactive terminal portfolio. A software engineer passionate about building beautiful web applications." }
+        document::Meta { property: "og:title", content: "Srivarsan | Portfolio" }
+        document::Meta { property: "og:description", content: "Srivarsan's interactive terminal portfolio. A software engineer passionate about building beautiful web applications." }
+        document::Meta { property: "og:image", content: "https://srivarsank.github.io/assets/favicon.png" }
+        document::Meta { property: "og:url", content: "https://srivarsank.github.io" }
+        document::Meta { property: "og:type", content: "website" }
+        document::Meta { name: "twitter:card", content: "summary" }
+        document::Meta { name: "twitter:title", content: "Srivarsan | Portfolio" }
+        document::Meta { name: "twitter:description", content: "Srivarsan's interactive terminal portfolio. A software engineer passionate about building beautiful web applications." }
+        document::Meta { name: "twitter:image", content: "https://srivarsank.github.io/assets/favicon.png" }
+
         match os_state() {
             OsState::Booting => {
                 rsx! {
