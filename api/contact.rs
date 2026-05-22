@@ -29,8 +29,14 @@ pub async fn handler(req: Request) -> Result<Response<ResponseBody>, Error> {
     };
 
     // Use RESEND_API_KEY from environment variables
-    let api_key = std::env::var("RESEND_API_KEY")
-        .unwrap_or_else(|_| &std::env::var("RESEND_API_KEY").unwrap_or_default().to_string());
+    let api_key = match std::env::var("RESEND_API_KEY") {
+        Ok(k) if !k.is_empty() => k,
+        _ => {
+            return Ok(Response::builder()
+                .status(StatusCode::INTERNAL_SERVER_ERROR)
+                .body(ResponseBody::from("Missing RESEND_API_KEY environment variable"))?);
+        }
+    };
 
     let client = reqwest::Client::new();
     let resend_req = json!({
