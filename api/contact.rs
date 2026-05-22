@@ -6,6 +6,7 @@ use serde_json::json;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
+    let _ = dotenvy::dotenv();
     run(service_fn(handler)).await
 }
 
