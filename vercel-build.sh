@@ -29,7 +29,7 @@ if [ -d "$WASM_TARGET_CACHE" ]; then
     cp -r "$WASM_TARGET_CACHE" target
 fi
 
-dx build --release --platform web
+dx build --release --platform web --package web
 
 # Save wasm target cache (only the wasm-specific parts, not all of target/)
 echo "=== Saving wasm target cache ==="
