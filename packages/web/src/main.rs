@@ -1,3 +1,4 @@
+// Web Entry Point for Srivarsan Portfolio
 use dioxus::prelude::*;
 use ui::{BootSequence, LoginScreen, Taskbar, DesktopIcons, Terminal};
 
