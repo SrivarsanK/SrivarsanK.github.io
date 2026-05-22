@@ -6,13 +6,14 @@ set -e
 echo "=== Installing Rust WebAssembly target ==="
 rustup target add wasm32-unknown-unknown
 
-echo "=== Installing cargo-binstall ==="
-curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
-
-echo "=== Installing Dioxus CLI ==="
-# Force x86_64-unknown-linux-gnu target to use prebuilt binaries
-# instead of building from source (which is slow and fails in musl env)
-cargo binstall -y --target x86_64-unknown-linux-gnu dioxus-cli
+echo "=== Checking if Dioxus CLI is already installed ==="
+if command -v dx >/dev/null 2>&1; then
+    echo "=== Dioxus CLI is already installed: $(dx --version) ==="
+else
+    echo "=== Dioxus CLI not found. Installing from source... ==="
+    # Compile from source to avoid GLIBC version mismatch issues with prebuilt binaries
+    cargo install dioxus-cli --version 0.7.9 --locked
+fi
 
 echo "=== Building Dioxus Web App ==="
 dx build --release --platform web -p web
