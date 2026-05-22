@@ -33,13 +33,15 @@ fn App() -> Element {
             if let Ok(Some(storage)) = win.local_storage() {
                 if let Ok(Some(saved_wallpaper)) = storage.get_item("terminal-wallpaper") {
                     if saved_wallpaper == "/assets/frieren.jpg" {
+                        // User had old Frieren default saved, let's reset them to black or let them keep it? 
+                        // Let's just remove Frieren entirely or keep if they saved it.
                         wallpaper.set(Some(FRIEREN_BG.to_string()));
                     } else {
                         wallpaper.set(Some(saved_wallpaper));
                     }
                 } else {
-                    // Default wallpaper
-                    wallpaper.set(Some(frieren_for_effect.clone()));
+                    // Default wallpaper: Solid Black
+                    wallpaper.set(None);
                 }
                 if let Ok(Some(saved_theme)) = storage.get_item("terminal-theme") {
                     current_theme.set(saved_theme);
