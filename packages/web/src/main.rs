@@ -5,6 +5,7 @@ use ui::{BootSequence, LoginScreen, Taskbar, DesktopIcons, Terminal};
 const FAVICON: Asset = asset!("/assets/favicon.png");
 const MAIN_CSS: Asset = asset!("/assets/main.css");
 const FRIEREN_BG: Asset = asset!("/assets/frieren.jpg");
+const GARGANTUA_BG: Asset = asset!("/assets/gargantua.jpg");
 
 fn main() {
     dioxus::launch(App);
@@ -25,7 +26,7 @@ fn App() -> Element {
     let mut external_command = use_signal(|| None::<String>);
     let is_minimized = use_signal(|| false);
     let frieren_str = FRIEREN_BG.to_string();
-    let frieren_for_effect = frieren_str.clone();
+    let gargantua_str = GARGANTUA_BG.to_string();
 
     // Load saved preferences on client-side mount
     use_effect(move || {
@@ -33,15 +34,15 @@ fn App() -> Element {
             if let Ok(Some(storage)) = win.local_storage() {
                 if let Ok(Some(saved_wallpaper)) = storage.get_item("terminal-wallpaper") {
                     if saved_wallpaper == "/assets/frieren.jpg" {
-                        // User had old Frieren default saved, let's reset them to black or let them keep it? 
-                        // Let's just remove Frieren entirely or keep if they saved it.
                         wallpaper.set(Some(FRIEREN_BG.to_string()));
+                    } else if saved_wallpaper == "/assets/gargantua.jpg" {
+                        wallpaper.set(Some(GARGANTUA_BG.to_string()));
                     } else {
                         wallpaper.set(Some(saved_wallpaper));
                     }
                 } else {
-                    // Default wallpaper: Solid Black
-                    wallpaper.set(None);
+                    // Default wallpaper: Gargantua
+                    wallpaper.set(Some(GARGANTUA_BG.to_string()));
                 }
                 if let Ok(Some(saved_theme)) = storage.get_item("terminal-theme") {
                     current_theme.set(saved_theme);
@@ -122,7 +123,8 @@ fn App() -> Element {
                         Taskbar {
                             current_theme,
                             wallpaper,
-                            default_wallpaper: frieren_str.clone(),
+                            default_wallpaper: gargantua_str.clone(),
+                            frieren_wallpaper: frieren_str.clone(),
                             is_minimized,
                             on_logout: move |_| os_state.set(OsState::Login),
                             on_reset: handle_reset

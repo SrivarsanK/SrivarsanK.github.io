@@ -9,6 +9,7 @@ pub struct TaskbarProps {
     current_theme: Signal<String>,
     wallpaper: Signal<Option<String>>,
     default_wallpaper: String,
+    frieren_wallpaper: String,
     is_minimized: Signal<bool>,
     on_logout: EventHandler<()>,
     on_reset: EventHandler<()>,
@@ -288,6 +289,21 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
                             style: "position: absolute; bottom: 44px; right: 0; width: 160px; background-color: rgba(28, 28, 28, 0.95); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 0.5rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); overflow: hidden; padding: 0.25rem 0; display: flex; flex-direction: column; z-index: 100;",
                             div {
                                 onclick: move |_| {
+                                    let bg_url = props.default_wallpaper.clone();
+                                    wallpaper.set(Some(bg_url.clone()));
+                                    if let Some(win) = web_sys::window() {
+                                        if let Ok(Some(storage)) = win.local_storage() {
+                                            let _ = storage.set_item("terminal-wallpaper", &bg_url);
+                                        }
+                                    }
+                                    is_wallpaper_open.set(false);
+                                },
+                                style: "display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; cursor: pointer; color: #fff; transition: background-color 0.15s; font-size: 0.75rem; text-align: left;",
+                                class: "hover:bg-white/10",
+                                span { "Default (Gargantua)" }
+                            }
+                            div {
+                                onclick: move |_| {
                                     wallpaper.set(None);
                                     if let Some(win) = web_sys::window() {
                                         if let Ok(Some(storage)) = win.local_storage() {
@@ -298,11 +314,11 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
                                 },
                                 style: "display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; cursor: pointer; color: #fff; transition: background-color 0.15s; font-size: 0.75rem; text-align: left;",
                                 class: "hover:bg-white/10",
-                                span { "Default (Solid Black)" }
+                                span { "Solid Black" }
                             }
                             div {
                                 onclick: move |_| {
-                                    let bg_url = props.default_wallpaper.clone();
+                                    let bg_url = props.frieren_wallpaper.clone();
                                     wallpaper.set(Some(bg_url.clone()));
                                     if let Some(win) = web_sys::window() {
                                         if let Ok(Some(storage)) = win.local_storage() {
