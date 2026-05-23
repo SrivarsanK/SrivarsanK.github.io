@@ -41,6 +41,8 @@ jobs:
 
       - name: Build Dioxus Web App
         run: dx build --release --platform web --package web
+        env:
+          API_URL: ${{ secrets.API_URL }}
 
       - name: Copy Root Files (Google Verification, Sitemap, Robots)
         run: |

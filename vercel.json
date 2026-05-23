@@ -5,7 +5,7 @@
   "outputDirectory": "target/dx/web/release/web/public",
   "builds": [
     {
-      "src": "api/**/*.rs",
+      "src": "api/contact.rs",
       "use": "@vercel/rust"
     }
   ],

@@ -29,17 +29,20 @@ pub fn ContactForm() -> Element {
             message: message(),
         };
 
-        let mut origin = web_sys::window()
-            .and_then(|w| w.location().origin().ok())
-            .unwrap_or_else(|| "http://localhost:3000".to_string());
-
-        if origin.contains("localhost") || origin.contains("127.0.0.1") {
-            origin = "http://localhost:3000".to_string();
-        }
+        let api_base = option_env!("API_URL").map(|s| s.to_string()).unwrap_or_else(|| {
+            let mut origin = web_sys::window()
+                .and_then(|w| w.location().origin().ok())
+                .unwrap_or_default();
+            if origin.contains("localhost") || origin.contains("127.0.0.1") {
+                "http://localhost:3000".to_string()
+            } else {
+                origin
+            }
+        });
 
         let body = serde_json::to_string(&form_data).unwrap_or_default();
 
-        let result = gloo_net::http::Request::post(&format!("{}/api/contact", origin))
+        let result = gloo_net::http::Request::post(&format!("{}/api/contact", api_base))
             .header("Content-Type", "application/json")
             .body(&body)
             .unwrap()
