@@ -1,14 +1,21 @@
 {
   "version": 2,
   "buildCommand": "bash vercel-build.sh",
+  "devCommand": "dx serve --package web --port $PORT",
   "outputDirectory": "target/dx/web/release/web/public",
+  "builds": [
+    {
+      "src": "api/**/*.rs",
+      "use": "@vercel/rust"
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/(.*)",
       "destination": "/api/$1"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!api/)[^.]*)",
       "destination": "/index.html"
     }
   ]

@@ -3,7 +3,11 @@ use vercel_runtime::{run, service_fn, Error, Request, ResponseBody};
 use http::{Response, StatusCode};
 use http_body_util::BodyExt;
 use shared::ContactForm;
-use serde_json::json;
+use lettre::transport::smtp::authentication::Credentials;
+use lettre::{Message, SmtpTransport, Transport};
+use lettre::message::{header::ContentType, SinglePart};
+
+mod email_template;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -12,10 +16,21 @@ async fn main() -> Result<(), Error> {
 }
 
 pub async fn handler(req: Request) -> Result<Response<ResponseBody>, Error> {
+    // Handle CORS preflight
+    if req.method() == "OPTIONS" {
+        return Ok(Response::builder()
+            .status(StatusCode::OK)
+            .header("Access-Control-Allow-Origin", "*")
+            .header("Access-Control-Allow-Methods", "POST, OPTIONS")
+            .header("Access-Control-Allow-Headers", "Content-Type")
+            .body(ResponseBody::from(""))?);
+    }
+
     // Only allow POST
     if req.method() != "POST" {
         return Ok(Response::builder()
             .status(StatusCode::METHOD_NOT_ALLOWED)
+            .header("Access-Control-Allow-Origin", "*")
             .body(ResponseBody::from("Method not allowed"))?);
     }
 
@@ -26,54 +41,64 @@ pub async fn handler(req: Request) -> Result<Response<ResponseBody>, Error> {
         Err(e) => {
             return Ok(Response::builder()
                 .status(StatusCode::BAD_REQUEST)
+                .header("Access-Control-Allow-Origin", "*")
                 .body(ResponseBody::from(format!("Invalid JSON body: {}", e)))?);
         }
     };
 
-    // Use RESEND_API_KEY from environment variables
-    let api_key = match std::env::var("RESEND_API_KEY") {
-        Ok(k) if !k.is_empty() => k,
-        _ => {
-            return Ok(Response::builder()
-                .status(StatusCode::INTERNAL_SERVER_ERROR)
-                .body(ResponseBody::from("Missing RESEND_API_KEY environment variable"))?);
-        }
-    };
+    // Get SMTP credentials from environment variables
+    let smtp_username = std::env::var("SMTP_USERNAME").unwrap_or_default();
+    let smtp_password = std::env::var("SMTP_PASSWORD").unwrap_or_default();
 
-    let client = reqwest::Client::new();
-    let resend_req = json!({
-        "from": "Acme <onboarding@resend.dev>",
-        "to": ["srivarsankannan@gmail.com"],
-        "subject": format!("Portfolio Contact: {} - {}", form.name, form.subject),
-        "html": format!(
-            "<p><strong>Name:</strong> {}</p><p><strong>Email:</strong> {}</p><p><strong>Message:</strong></p><p>{}</p>",
-            form.name, form.email, form.message
-        )
-    });
+    if smtp_username.is_empty() || smtp_password.is_empty() {
+        return Ok(Response::builder()
+            .status(StatusCode::INTERNAL_SERVER_ERROR)
+            .header("Access-Control-Allow-Origin", "*")
+            .body(ResponseBody::from("Missing SMTP credentials"))?);
+    }
 
-    let response = client.post("https://api.resend.com/emails")
-        .header("Authorization", format!("Bearer {}", api_key))
-        .json(&resend_req)
-        .send()
-        .await;
+    // Replace spaces in the app password just in case
+    let clean_password = smtp_password.replace(" ", "");
 
-    match response {
-        Ok(res) => {
-            if res.status().is_success() {
-                Ok(Response::builder()
-                    .status(StatusCode::OK)
-                    .body(ResponseBody::from("Email sent successfully!"))?)
-            } else {
-                let err_text = res.text().await.unwrap_or_default();
-                Ok(Response::builder()
+    let html_body = email_template::build_html_email(&form);
+
+    let email = match Message::builder()
+        .from(format!("Portfolio Contact <{}>", smtp_username).parse()?)
+        .to(smtp_username.parse()?)
+        .subject(format!("Portfolio Contact: {} - {}", form.name, form.subject))
+        .singlepart(
+            SinglePart::builder()
+                .content_type(ContentType::TEXT_HTML)
+                .body(html_body)
+        ) {
+            Ok(m) => m,
+            Err(e) => {
+                return Ok(Response::builder()
                     .status(StatusCode::INTERNAL_SERVER_ERROR)
-                    .body(ResponseBody::from(format!("Resend API error: {}", err_text)))?)
+                    .header("Access-Control-Allow-Origin", "*")
+                    .body(ResponseBody::from(format!("Failed to build email: {}", e)))?);
             }
-        }
+        };
+
+    let creds = Credentials::new(smtp_username.clone(), clean_password);
+
+    // Open a remote connection to gmail
+    let mailer = SmtpTransport::relay("smtp.gmail.com")
+        .unwrap()
+        .credentials(creds)
+        .build();
+
+    // Send the email
+    match mailer.send(&email) {
+        Ok(_) => Ok(Response::builder()
+            .status(StatusCode::OK)
+            .header("Access-Control-Allow-Origin", "*")
+            .body(ResponseBody::from("Email sent successfully!"))?),
         Err(e) => {
             Ok(Response::builder()
                 .status(StatusCode::INTERNAL_SERVER_ERROR)
-                .body(ResponseBody::from(format!("Failed to send request: {}", e)))?)
+                .header("Access-Control-Allow-Origin", "*")
+                .body(ResponseBody::from(format!("Could not send email: {:?}", e)))?)
         }
     }
 }

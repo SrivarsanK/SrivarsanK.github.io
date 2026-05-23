@@ -15,6 +15,28 @@ enum LineType {
     Component(Element),
 }
 
+fn parse_args(input: &str) -> Vec<String> {
+    let mut args = Vec::new();
+    let mut current = String::new();
+    let mut in_quotes = false;
+    for c in input.chars() {
+        if c == '"' {
+            in_quotes = !in_quotes;
+        } else if c.is_whitespace() && !in_quotes {
+            if !current.is_empty() {
+                args.push(current.clone());
+                current.clear();
+            }
+        } else {
+            current.push(c);
+        }
+    }
+    if !current.is_empty() {
+        args.push(current);
+    }
+    args
+}
+
 #[derive(Clone)]
 struct TerminalLine {
     id: usize,
@@ -196,7 +218,10 @@ pub fn Terminal(props: TerminalProps) -> Element {
 
         let out_id = alloc_id(&mut next_id);
 
-        match trimmed_lower.as_str() {
+        let mut parts = trimmed.split_whitespace();
+        let cmd = parts.next().unwrap_or("").to_lowercase();
+
+        match cmd.as_str() {
             "help" => {
                 lines.write().push(TerminalLine {
                     id: out_id,
@@ -252,11 +277,88 @@ pub fn Terminal(props: TerminalProps) -> Element {
                 });
             }
             "contact" => {
-                lines.write().push(TerminalLine {
-                    id: out_id,
-                    line_type: LineType::Component(rsx! { ContactForm {} }),
-                    content: "".to_string(),
-                });
+                let rest = trimmed[cmd.len()..].trim();
+                let args = parse_args(rest);
+                
+                if args.is_empty() {
+                    lines.write().push(TerminalLine {
+                        id: out_id,
+                        line_type: LineType::Component(rsx! { ContactForm {} }),
+                        content: "".to_string(),
+                    });
+                } else if args.len() >= 4 {
+                    let name = args[0].clone();
+                    let email = args[1].clone();
+                    let subject = args[2].clone();
+                    let message = args[3..].join(" ");
+
+                    lines.write().push(TerminalLine {
+                        id: out_id,
+                        line_type: LineType::Info,
+                        content: "Sending message...".to_string(),
+                    });
+
+                    let form_data = shared::ContactForm {
+                        name,
+                        email,
+                        subject,
+                        message,
+                    };
+
+                    spawn(async move {
+                        let mut origin = web_sys::window()
+                            .and_then(|w| w.location().origin().ok())
+                            .unwrap_or_else(|| "http://localhost:3000".to_string());
+
+                        if origin.contains("localhost") || origin.contains("127.0.0.1") {
+                            origin = "http://localhost:3000".to_string();
+                        }
+
+                        let body = serde_json::to_string(&form_data).unwrap_or_default();
+
+                        let res = gloo_net::http::Request::post(&format!("{}/api/contact", origin))
+                            .header("Content-Type", "application/json")
+                            .body(&body)
+                            .unwrap()
+                            .send()
+                            .await;
+
+                        let mut l = lines.write();
+                        if let Some(pos) = l.iter().position(|x| x.id == out_id) {
+                            match res {
+                                Ok(response) if response.ok() => {
+                                    l[pos] = TerminalLine {
+                                        id: out_id,
+                                        line_type: LineType::Info,
+                                        content: "Message sent successfully!".to_string(),
+                                    };
+                                }
+                                Ok(response) => {
+                                    l[pos] = TerminalLine {
+                                        id: out_id,
+                                        line_type: LineType::Error,
+                                        content: format!("Failed to send: HTTP {}", response.status()),
+                                    };
+                                }
+                                Err(e) => {
+                                    l[pos] = TerminalLine {
+                                        id: out_id,
+                                        line_type: LineType::Error,
+                                        content: format!("Error sending message: {}", e),
+                                    };
+                                }
+                            }
+                        }
+                        drop(l);
+                        scroll_to_bottom();
+                    });
+                } else {
+                    lines.write().push(TerminalLine {
+                        id: out_id,
+                        line_type: LineType::Error,
+                        content: "Usage: contact [\"Name\"] [\"Email\"] [\"Subject\"] [\"Message\"]\nOr type 'contact' with no arguments to open the form.".to_string(),
+                    });
+                }
             }
             "skills" => {
                 lines.write().push(TerminalLine {
@@ -500,7 +602,7 @@ pub fn Terminal(props: TerminalProps) -> Element {
                 lines.write().push(TerminalLine {
                     id: out_id,
                     line_type: LineType::Error,
-                    content: format!("'{}': command not found. Type 'help' for available commands.", trimmed),
+                    content: format!("'{}': command not found. Type 'help' for available commands.", cmd),
                 });
             }
         }

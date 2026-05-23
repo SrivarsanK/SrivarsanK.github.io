@@ -29,15 +29,26 @@ pub fn ContactForm() -> Element {
             message: message(),
         };
 
-        let client = reqwest::Client::new();
-        let res = client.post("/api/contact")
-            .json(&form_data)
+        let mut origin = web_sys::window()
+            .and_then(|w| w.location().origin().ok())
+            .unwrap_or_else(|| "http://localhost:3000".to_string());
+
+        if origin.contains("localhost") || origin.contains("127.0.0.1") {
+            origin = "http://localhost:3000".to_string();
+        }
+
+        let body = serde_json::to_string(&form_data).unwrap_or_default();
+
+        let result = gloo_net::http::Request::post(&format!("{}/api/contact", origin))
+            .header("Content-Type", "application/json")
+            .body(&body)
+            .unwrap()
             .send()
             .await;
 
-        let result = match res {
+        let result = match result {
             Ok(response) => {
-                if response.status().is_success() {
+                if response.ok() {
                     Ok(())
                 } else {
                     let text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());

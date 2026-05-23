@@ -80,6 +80,18 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
     };
 
     rsx! {
+        // Overlay to close menus when clicking outside
+        if is_start_open() || is_theme_open() || is_wallpaper_open() {
+            div {
+                class: "fixed inset-0 z-40",
+                onclick: move |_| {
+                    is_start_open.set(false);
+                    is_theme_open.set(false);
+                    is_wallpaper_open.set(false);
+                }
+            }
+        }
+
         footer {
             class: "fixed bottom-0 left-0 right-0 h-[40px] bg-[#00122e]/80 backdrop-blur-md border-t border-white/10 z-50 flex items-center justify-between px-2 select-none",
             

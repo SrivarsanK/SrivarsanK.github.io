@@ -7,6 +7,14 @@ edition = "2021"
 name = "contact"
 path = "contact.rs"
 
+[[bin]]
+name = "test_mail"
+path = "test_mail.rs"
+
+[[bin]]
+name = "dev_server"
+path = "dev_server.rs"
+
 [dependencies]
 vercel_runtime = "2"
 tokio = { version = "1.36", features = ["full"] }
@@ -17,3 +25,6 @@ shared = { path = "../packages/shared" }
 http = "1"
 http-body-util = "0.1"
 dotenvy = "0.15"
+lettre = { version = "0.11", features = ["tokio1-native-tls", "builder"] }
+axum = "0.8"
+tower-http = { version = "0.6", features = ["cors"] }
