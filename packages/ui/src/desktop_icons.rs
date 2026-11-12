@@ -71,6 +71,15 @@ fn DesktopIcon(
     on_pointer_down: EventHandler<(f64, f64)>,
     on_double_click: EventHandler<String>,
 ) -> Element {
+    let is_folder = command == "projects" || command == "skills";
+    let is_skills = command == "skills";
+    let icon_background = match command.as_str() {
+        "about" => "linear-gradient(145deg, #58b8ff, #1767d2)",
+        "contact" => "linear-gradient(145deg, #56c5fa, #087ebd)",
+        "joke" => "linear-gradient(145deg, #ffe894, #edb52e)",
+        _ => "linear-gradient(145deg, #edf6fc, #9ebbd0)",
+    };
+    let glyph_color = if command == "joke" { "#785114" } else if command == "clear" { "#387491" } else { "#ffffff" };
     let z_index = if is_dragging { 20 } else { 10 };
     let drag_class = if is_dragging { "opacity-70" } else { "" };
     
@@ -90,7 +99,7 @@ fn DesktopIcon(
 
     rsx! {
         div {
-            style: "transform: translate3d({pos.0}px, {pos.1}px, 0); position: absolute; z-index: {z_index};",
+            style: "transform: translate3d({pos.0}px, {pos.1}px, 0); position: absolute; z-index: {z_index}; width: 80px; padding: 6px 2px; box-sizing: border-box;",
             class: "flex flex-col items-center w-16 p-1.5 cursor-pointer select-none group rounded-md hover:bg-white/10 transition-colors duration-200 {drag_class} pointer-events-auto",
             onpointerdown: handle_down,
             ondoubleclick: move |_| on_double_click.call(command.clone()),
@@ -98,29 +107,41 @@ fn DesktopIcon(
                 class: "flex flex-col items-center w-full icon-entrance {bounce_class}",
                 style: "{entrance_delay}",
                 div {
-                    class: "relative w-12 h-12 flex items-center justify-center pointer-events-none",
-                    style: "transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1), background-color 200ms ease, border-color 200ms ease;",
-                    div {
-                        style: "position: absolute; top: 7px; left: 1px; width: 22px; height: 12px; border-radius: 4px 5px 0 0; background: #d99816; box-shadow: inset 0 1px 0 #ffe39a;",
-                    }
-                    div {
-                        style: "position: absolute; top: 14px; left: 1px; width: 46px; height: 30px; border-radius: 3px 5px 5px 5px; background: linear-gradient(160deg, #ffeaa1 0%, #ffd05a 40%, #eeb235 100%); border-top: 2px solid #fff0b8; box-shadow: 0 3px 5px #0005, inset 0 -2px 0 #c98a19;",
-                    }
-                    svg {
-                        xmlns: "http://www.w3.org/2000/svg",
-                        view_box: "0 0 24 24",
-                        fill: "none",
-                        stroke: "currentColor",
-                        stroke_width: "2",
-                        stroke_linecap: "round",
-                        stroke_linejoin: "round",
-                        class: "w-5 h-5",
-                        style: "position: relative; margin-top: 12px; color: #725015; filter: drop-shadow(0 1px 0 #fff8);",
-                        path { d: "{svg_path}" }
+                    style: "position: relative; width: 48px; height: 48px; flex-shrink: 0; pointer-events: none; filter: drop-shadow(0 2px 3px #0004);",
+                    if is_folder {
+                        div { style: "position: absolute; top: 8px; left: 2px; width: 23px; height: 12px; border-radius: 4px 6px 0 0; background: #e7ab36;" }
+                        div { style: "position: absolute; top: 15px; left: 2px; width: 44px; height: 28px; border-radius: 2px 4px 4px 4px; background: #e7ab36;" }
+                        div { style: "position: absolute; top: 16px; left: 5px; width: 38px; height: 12px; border-radius: 2px; background: #fff6dc;" }
+                        div { style: "position: absolute; top: 21px; left: 2px; width: 44px; height: 23px; border-radius: 3px 3px 4px 4px; background: linear-gradient(180deg, #ffdc76, #f5bf46); box-shadow: inset 0 1px 0 #ffe8a0;" }
+                        if is_skills {
+                            svg {
+                                xmlns: "http://www.w3.org/2000/svg",
+                                view_box: "0 0 24 24",
+                                width: "16", height: "16",
+                                fill: "none", stroke: "#986c1b", stroke_width: "1.8",
+                                stroke_linecap: "round", stroke_linejoin: "round",
+                                style: "position: absolute; left: 16px; top: 25px; width: 16px; height: 16px;",
+                                path { d: "{svg_path}" }
+                            }
+                        }
+                    } else {
+                        div {
+                            style: "position: absolute; top: 6px; left: 5px; width: 38px; height: 38px; border-radius: 9px; background: {icon_background}; box-shadow: inset 0 1px 0 #ffffff70;",
+                            svg {
+                                xmlns: "http://www.w3.org/2000/svg",
+                                view_box: "0 0 24 24",
+                                width: "24", height: "24",
+                                fill: "none", stroke: "{glyph_color}", stroke_width: "1.7",
+                                stroke_linecap: "round", stroke_linejoin: "round",
+                                style: "position: absolute; left: 7px; top: 7px; width: 24px; height: 24px;",
+                                path { d: "{svg_path}" }
+                            }
+                        }
                     }
                 }
                 span {
                     class: "mt-1 text-xs font-medium text-white text-center drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] px-1 py-0.5 rounded leading-tight pointer-events-none",
+                    style: "display: block; width: 80px; margin-top: 5px; padding: 0; color: white; font-family: Segoe UI, sans-serif; font-size: 12px; font-weight: 400; line-height: 16px; text-align: center; white-space: nowrap; text-shadow: 0 1px 3px #000, 0 0 4px #0008;",
                     "{label}"
                 }
             }
@@ -145,7 +166,7 @@ pub fn DesktopIcons(props: DesktopIconsProps) -> Element {
         let mut current_x = 20;
         let mut current_y = 20;
         let icon_spacing_y = 100;
-        let icon_spacing_x = 80;
+        let icon_spacing_x = 96;
 
         for icon in ICONS {
             if is_mobile {
