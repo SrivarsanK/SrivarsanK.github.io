@@ -369,7 +369,7 @@ pub fn Terminal(props: TerminalProps) -> Element {
                     line_type: LineType::Component(rsx! {
                         div {
                             class: "my-2 font-mono leading-relaxed bg-secondary/30 p-4 border border-border rounded-lg max-w-3xl",
-                            div { class: "text-terminal-cyan font-bold mb-4", "┌ TECHNICAL SKILLS ┐" }
+                            div { class: "text-terminal-cyan font-bold mb-4", "My Skills" }
                             
                             // Languages (Purple)
                             div { class: "text-sm text-foreground/60 mb-2 mt-4 font-bold tracking-wide", "LANGUAGES" }
