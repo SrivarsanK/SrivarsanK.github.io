@@ -1,0 +1,17 @@
+{
+  "name": "srivarsan-portfolio",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "engines": { "node": ">=22" },
+  "dependencies": {
+    "astro": "5.16.15",
+    "gsap": "3.13.0",
+    "@fontsource-variable/bricolage-grotesque": "5.2.10",
+    "@fontsource-variable/dm-sans": "5.2.8"
+  }
+}

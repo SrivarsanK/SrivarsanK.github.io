@@ -447,7 +447,7 @@ pub fn Terminal(props: TerminalProps) -> Element {
                                     href: "https://github.com/SrivarsanK/aws_a4b", target: "_blank",
                                     class: "border border-border/50 rounded-md p-3 hover:bg-background/60 transition-colors block cursor-pointer",
                                     style: "text-decoration: none; color: inherit;",
-                                    div { class: "font-bold text-terminal-cyan mb-1", "aws_a4b" }
+                                    div { class: "font-bold text-terminal-cyan mb-1", "Nexus Solo" }
                                     p { class: "text-xs mb-2", style: "color: white;", "AI-powered command center for managing multiple creators" }
                                     div { class: "text-[10px] text-foreground/60", "TypeScript" }
                                 }

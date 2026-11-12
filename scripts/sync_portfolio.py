@@ -5,6 +5,7 @@ from pathlib import Path
 import urllib.request
 
 OWNER = "SrivarsanK"
+FEATURED_NAMES = {"Glide": "Glide", "aws_a4b": "Nexus Solo"}
 
 
 def get_json(path):
@@ -43,7 +44,7 @@ def main():
             continue
         repository_languages = get_json(f"/repos/{OWNER}/{repository['name']}/languages")
         languages.update(repository_languages)
-        if "portfolio" in repository.get("topics", []) or repository["name"] == "Glide":
+        if "portfolio" in repository.get("topics", []) or repository["name"] in FEATURED_NAMES:
             featured.append((repository, repository_languages))
 
     language_cards = "\n".join(
@@ -58,7 +59,7 @@ def main():
             '                                    href: ' + rust_text(repository["html_url"]) + ', target: "_blank", rel: "noopener noreferrer",\n'
             '                                    class: "border border-border/50 rounded-md p-3 hover:bg-background/60 transition-colors block cursor-pointer",\n'
             '                                    style: "text-decoration: none; color: inherit;",\n'
-            '                                    div { class: "font-bold text-terminal-cyan mb-1", ' + rust_text(repository["name"]) + ' }\n'
+            '                                    div { class: "font-bold text-terminal-cyan mb-1", ' + rust_text(FEATURED_NAMES.get(repository["name"], repository["name"])) + ' }\n'
             '                                    p { class: "text-xs mb-2", style: "color: white;", ' + rust_text(repository.get("description")) + ' }\n'
             '                                    div { class: "text-[10px] text-foreground/60", ' + rust_text(" · ".join(repository_languages)) + ' }\n'
             '                                }'

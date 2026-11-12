@@ -1,0 +1,35 @@
+---
+import Base from '../../layouts/Base.astro';
+import ProjectArt from '../../components/ProjectArt.astro';
+import { profile, projects } from '../../data/portfolio.js';
+
+export function getStaticPaths() {
+  return projects.map((project) => ({ params: { slug: project.slug }, props: { project } }));
+}
+
+const { project } = Astro.props;
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareSourceCode',
+  name: project.name,
+  description: project.summary,
+  codeRepository: project.repository,
+  url: new URL(Astro.url.pathname, Astro.site).href,
+};
+---
+<Base title={project.name + ' | ' + project.category + ' | ' + profile.name} description={project.summary} schema={schema}>
+  <main id="main" class="detail">
+    <a class="ink-link" href="/#work">← Selected work</a>
+    <div class="detail-grid">
+      <article>
+        <p class="eyebrow">{project.category}</p>
+        <h1><strong>{project.name}</strong></h1>
+        <p class="lede">{project.summary}</p>
+        <ul class="stack" aria-label="Technology stack">{project.stack.map((item) => <li>{item}</li>)}</ul>
+        {project.sections.map(([heading, copy]) => <section><h2>{heading}</h2><p>{copy}</p></section>)}
+        <a class="ink-link" href={project.repository}>View source on GitHub ↗</a>
+      </article>
+      <figure class="detail-print"><ProjectArt slug={project.slug} /><figcaption>{project.name}</figcaption></figure>
+    </div>
+  </main>
+</Base>
