@@ -70,7 +70,6 @@ fn App() -> Element {
         document::Link { rel: "icon", href: FAVICON }
         document::Link { rel: "stylesheet", href: MAIN_CSS }
 
-        document::Meta { name: "description", content: "Srivarsan K (K Srivarsan), AI and full-stack developer at SRMIST Ramapuram, Chennai. Building Glide. Find projects, GitHub and the official LinkedIn profile." }
         document::Meta { property: "og:title", content: "Srivarsan K | AI & Full-Stack Developer" }
         document::Meta { property: "og:description", content: "Srivarsan K (K Srivarsan), AI and full-stack developer at SRMIST Ramapuram, Chennai. Building Glide. Find projects, GitHub and the official LinkedIn profile." }
         document::Meta { property: "og:image", content: "https://srivarsank.github.io/assets/favicon.png" }
