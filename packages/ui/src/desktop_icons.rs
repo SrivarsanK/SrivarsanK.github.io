@@ -31,6 +31,12 @@ const ICONS: &[IconDef] = &[
     },
 
     IconDef {
+        label: "Skills",
+        command: "skills",
+        initial_pos: (100, 20),
+        svg_path: "M8 8l-4 4 4 4 M16 8l4 4-4 4 M14 4l-4 16",
+    },
+    IconDef {
         label: "Joke",
         command: "joke",
         initial_pos: (20, 220),
@@ -92,8 +98,14 @@ fn DesktopIcon(
                 class: "flex flex-col items-center w-full icon-entrance {bounce_class}",
                 style: "{entrance_delay}",
                 div {
-                    class: "w-10 h-10 flex items-center justify-center bg-blue-500/20 rounded-lg border border-blue-400/30 group-hover:bg-blue-500/30 group-hover:border-blue-400/50 backdrop-blur-sm transition-smooth shadow-lg pointer-events-none",
+                    class: "relative w-12 h-12 flex items-center justify-center pointer-events-none",
                     style: "transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1), background-color 200ms ease, border-color 200ms ease;",
+                    div {
+                        style: "position: absolute; top: 7px; left: 1px; width: 22px; height: 12px; border-radius: 4px 5px 0 0; background: #d99816; box-shadow: inset 0 1px 0 #ffe39a;",
+                    }
+                    div {
+                        style: "position: absolute; top: 14px; left: 1px; width: 46px; height: 30px; border-radius: 3px 5px 5px 5px; background: linear-gradient(160deg, #ffeaa1 0%, #ffd05a 40%, #eeb235 100%); border-top: 2px solid #fff0b8; box-shadow: 0 3px 5px #0005, inset 0 -2px 0 #c98a19;",
+                    }
                     svg {
                         xmlns: "http://www.w3.org/2000/svg",
                         view_box: "0 0 24 24",
@@ -102,12 +114,13 @@ fn DesktopIcon(
                         stroke_width: "2",
                         stroke_linecap: "round",
                         stroke_linejoin: "round",
-                        class: "w-6 h-6 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]",
+                        class: "w-5 h-5",
+                        style: "position: relative; margin-top: 12px; color: #725015; filter: drop-shadow(0 1px 0 #fff8);",
                         path { d: "{svg_path}" }
                     }
                 }
                 span {
-                    class: "mt-1 text-[10px] font-medium text-white text-center drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] px-1 py-0.5 rounded leading-tight pointer-events-none",
+                    class: "mt-1 text-xs font-medium text-white text-center drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] px-1 py-0.5 rounded leading-tight pointer-events-none",
                     "{label}"
                 }
             }
