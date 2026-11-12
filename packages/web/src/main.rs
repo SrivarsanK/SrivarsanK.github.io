@@ -66,19 +66,19 @@ fn App() -> Element {
     };
 
     rsx! {
-        document::Title { "Srivarsan K" }
+        document::Title { "Srivarsan K | AI & Full-Stack Developer" }
         document::Link { rel: "icon", href: FAVICON }
         document::Link { rel: "stylesheet", href: MAIN_CSS }
 
-        document::Meta { name: "description", content: "Srivarsan's interactive terminal portfolio. A software engineer passionate about building beautiful web applications." }
-        document::Meta { property: "og:title", content: "Srivarsan K" }
-        document::Meta { property: "og:description", content: "Srivarsan's interactive terminal portfolio. A software engineer passionate about building beautiful web applications." }
+        document::Meta { name: "description", content: "Srivarsan K (K Srivarsan), AI and full-stack developer at SRMIST Ramapuram, Chennai. Building Glide. Find projects, GitHub and the official LinkedIn profile." }
+        document::Meta { property: "og:title", content: "Srivarsan K | AI & Full-Stack Developer" }
+        document::Meta { property: "og:description", content: "Srivarsan K (K Srivarsan), AI and full-stack developer at SRMIST Ramapuram, Chennai. Building Glide. Find projects, GitHub and the official LinkedIn profile." }
         document::Meta { property: "og:image", content: "https://srivarsank.github.io/assets/favicon.png" }
         document::Meta { property: "og:url", content: "https://srivarsank.github.io" }
         document::Meta { property: "og:type", content: "website" }
         document::Meta { name: "twitter:card", content: "summary" }
-        document::Meta { name: "twitter:title", content: "Srivarsan K" }
-        document::Meta { name: "twitter:description", content: "Srivarsan's interactive terminal portfolio. A software engineer passionate about building beautiful web applications." }
+        document::Meta { name: "twitter:title", content: "Srivarsan K | AI & Full-Stack Developer" }
+        document::Meta { name: "twitter:description", content: "Srivarsan K (K Srivarsan), AI and full-stack developer at SRMIST Ramapuram, Chennai. Building Glide. Find projects, GitHub and the official LinkedIn profile." }
         document::Meta { name: "twitter:image", content: "https://srivarsank.github.io/assets/favicon.png" }
 
         match os_state() {

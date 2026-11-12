@@ -57,6 +57,9 @@ jobs:
           cp sitemap.xml target/dx/web/release/web/public/
           cp robots.txt target/dx/web/release/web/public/
 
+      - name: Publish searchable profile and metadata
+        run: python3 scripts/publish_profile.py target/dx/web/release/web/public
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
