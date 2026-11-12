@@ -425,6 +425,14 @@ pub fn Terminal(props: TerminalProps) -> Element {
                             div { class: "text-terminal-cyan font-bold mb-4", "┌ FEATURED PROJECTS ┐" }
                             div {
                                 style: "display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;",
+                                a {
+                                    href: "https://github.com/SrivarsanK/Glide", target: "_blank", rel: "noopener noreferrer",
+                                    class: "border border-border/50 rounded-md p-3 hover:bg-background/60 transition-colors block cursor-pointer",
+                                    style: "text-decoration: none; color: inherit;",
+                                    div { class: "font-bold text-terminal-cyan mb-1", "Glide" }
+                                    p { class: "text-xs mb-2", style: "color: white;", "Open-source, local-first visual editor for React, Vue, and Svelte. Edit styles and layout on a live canvas, and Glide writes the changes directly to your source code." }
+                                    div { class: "text-[10px] text-foreground/60", "TypeScript · Vite · AST" }
+                                }
                                 // 1
                                 a {
                                     href: "https://github.com/SrivarsanK/RideSuraksha", target: "_blank",
