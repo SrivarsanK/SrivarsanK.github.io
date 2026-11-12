@@ -29,12 +29,52 @@ const THEMES: &[ThemeInfo] = &[
     ThemeInfo { name: "Dracula", color: "#282a36", id: "dracula" },
 ];
 
+
+struct CursorPack {
+    id: &'static str,
+    name: &'static str,
+    cursor: &'static str,
+    pointer: &'static str,
+}
+
+const CURSOR_PACKS: &[CursorPack] = &[
+    CursorPack { id: "system", name: "System cursor", cursor: "", pointer: "" },
+    CursorPack { id: "chiikawa", name: "White Chiikawa", cursor: "https://cdn.custom-cursor.com/db/28666/32/among-us-white-chiikawa-character-cursor.png", pointer: "https://cdn.custom-cursor.com/db/28665/32/among-us-white-chiikawa-character-pointer.png" },
+    CursorPack { id: "among-us-beige-one-piece-roronoa-zoro", name: "Beige One Piece Roronoa Zoro Character", cursor: "https://cdn.custom-cursor.com/db/29018/32/among-us-beige-roronoa-zoro-character-cursor.png", pointer: "https://cdn.custom-cursor.com/db/29017/32/among-us-beige-roronoa-zoro-character-pointer.png" },
+    CursorPack { id: "among-us-red-topaz", name: "Red Topaz Character", cursor: "https://cdn.custom-cursor.com/db/29066/32/among-us-red-topaz-character-cursor.png", pointer: "https://cdn.custom-cursor.com/db/29065/32/among-us-red-topaz-character-pointer.png" },
+    CursorPack { id: "among-us-green-mnc-zombie", name: "Green Minecraft Zombie Character", cursor: "https://cdn.custom-cursor.com/db/29082/32/among-us-green-minecraft-zombie-character-cursor.png", pointer: "https://cdn.custom-cursor.com/db/29081/32/among-us-green-minecraft-zombie-character-pointer.png" },
+    CursorPack { id: "among-us-yellow-banana-cat", name: "Yellow Banana Cat Character", cursor: "https://cdn.custom-cursor.com/db/28986/32/among-us-yellow-banana-cat-character-cursor.png", pointer: "https://cdn.custom-cursor.com/db/28985/32/among-us-yellow-banana-cat-character-pointer.png" },
+    CursorPack { id: "among-us-purple-vampire", name: "Purple Vampire Character", cursor: "https://cdn.custom-cursor.com/db/28922/32/among-us-purple-vampire-character-cursor.png", pointer: "https://cdn.custom-cursor.com/db/28921/32/among-us-purple-vampire-character-pointer.png" },
+];
+
 #[component]
 pub fn Taskbar(props: TaskbarProps) -> Element {
     let mut is_start_open = use_signal(|| false);
     let mut is_theme_open = use_signal(|| false);
     let mut is_wallpaper_open = use_signal(|| false);
     let mut is_reset_open = use_signal(|| false);
+    let mut cursor_id = use_signal(|| {
+        web_sys::window()
+            .and_then(|window| window.local_storage().ok().flatten())
+            .and_then(|storage| storage.get_item("desktop-cursor").ok().flatten())
+            .filter(|saved| CURSOR_PACKS.iter().any(|pack| pack.id == saved))
+            .unwrap_or_else(|| "chiikawa".to_string())
+    });
+    let selected_cursor = CURSOR_PACKS.iter()
+        .find(|pack| pack.id == cursor_id())
+        .unwrap_or(&CURSOR_PACKS[1]);
+    let cursor_value = if selected_cursor.id == "system" {
+        "auto".to_string()
+    } else {
+        format!("url('{}') 0 0, auto", selected_cursor.cursor)
+    };
+    let pointer_value = if selected_cursor.id == "system" {
+        "pointer".to_string()
+    } else {
+        format!("url('{}') 0 0, pointer", selected_cursor.pointer)
+    };
+    let cursor_styles = format!(":root {{ --desktop-cursor: {}; --desktop-pointer: {}; }}", cursor_value, pointer_value);
+
     let mut time = use_signal(|| Local::now());
     let mut is_minimized = props.is_minimized;
 
@@ -80,6 +120,7 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
     };
 
     rsx! {
+        document::Style { "{cursor_styles}" }
         // Overlay to close menus when clicking outside
         if is_start_open() || is_theme_open() || is_wallpaper_open() {
             div {
@@ -267,6 +308,29 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
             div {
                 class: "flex items-center justify-end gap-1 h-full px-2",
                 
+                label {
+                    style: "display: flex; align-items: center; gap: 6px; color: #fff; font-size: 12px;",
+                    span { "Cursor" }
+                    select {
+                        "aria-label": "Choose cursor",
+                        value: "{cursor_id}",
+                        style: "width: 140px; max-width: 24vw; padding: 5px; border: 1px solid #ffffff30; border-radius: 5px; background: #172336; color: white; font-size: 12px;",
+                        onchange: move |event| {
+                            let selected = event.value();
+                            if CURSOR_PACKS.iter().any(|pack| pack.id == selected) {
+                                if let Some(window) = web_sys::window() {
+                                    if let Ok(Some(storage)) = window.local_storage() {
+                                        let _ = storage.set_item("desktop-cursor", &selected);
+                                    }
+                                }
+                                cursor_id.set(selected);
+                            }
+                        },
+                        for pack in CURSOR_PACKS {
+                            option { value: "{pack.id}", "{pack.name}" }
+                        }
+                    }
+                }
                 // Wallpaper Dropdown Menu
                 div {
                     class: "relative flex items-center h-full",
