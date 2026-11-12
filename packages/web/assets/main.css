@@ -705,3 +705,27 @@ body {
     display: none !important;
   }
 }
+
+/* Figma-inspired cursor for mouse and trackpad input. */
+@media (hover: hover) and (pointer: fine) {
+  html, body {
+    cursor: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22104%22%20height%3D%2248%22%20viewBox%3D%220%200%20104%2048%22%3E%3Cpath%20d%3D%22M3%202L4%2025L10%2019L15%2029L20%2026L15%2017L24%2016Z%22%20fill%3D%22%238257e5%22%20stroke%3D%22white%22%20stroke-width%3D%221.5%22%20stroke-linejoin%3D%22round%22%2F%3E%3Crect%20x%3D%2222%22%20y%3D%2224%22%20width%3D%2278%22%20height%3D%2221%22%20rx%3D%225%22%20fill%3D%22%238257e5%22%2F%3E%3Ctext%20x%3D%2261%22%20y%3D%2238%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2Csans-serif%22%20font-size%3D%2211%22%20font-weight%3D%22600%22%20fill%3D%22white%22%3ESrivarsan%3C%2Ftext%3E%3C%2Fsvg%3E") 3 2, auto;
+  }
+
+  a, button, select, summary, [role="button"], .cursor-pointer {
+    cursor: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22104%22%20height%3D%2248%22%20viewBox%3D%220%200%20104%2048%22%3E%3Cpath%20d%3D%22M3%202L4%2025L10%2019L15%2029L20%2026L15%2017L24%2016Z%22%20fill%3D%22%238257e5%22%20stroke%3D%22white%22%20stroke-width%3D%221.5%22%20stroke-linejoin%3D%22round%22%2F%3E%3Crect%20x%3D%2222%22%20y%3D%2224%22%20width%3D%2278%22%20height%3D%2221%22%20rx%3D%225%22%20fill%3D%22%238257e5%22%2F%3E%3Ctext%20x%3D%2261%22%20y%3D%2238%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2Csans-serif%22%20font-size%3D%2211%22%20font-weight%3D%22600%22%20fill%3D%22white%22%3ESrivarsan%3C%2Ftext%3E%3C%2Fsvg%3E") 3 2, pointer;
+  }
+
+  input, textarea, [contenteditable="true"], [contenteditable=""] {
+    cursor: text;
+  }
+
+  input[type="button"], input[type="submit"], input[type="reset"],
+  input[type="checkbox"], input[type="radio"], input[type="range"] {
+    cursor: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22104%22%20height%3D%2248%22%20viewBox%3D%220%200%20104%2048%22%3E%3Cpath%20d%3D%22M3%202L4%2025L10%2019L15%2029L20%2026L15%2017L24%2016Z%22%20fill%3D%22%238257e5%22%20stroke%3D%22white%22%20stroke-width%3D%221.5%22%20stroke-linejoin%3D%22round%22%2F%3E%3Crect%20x%3D%2222%22%20y%3D%2224%22%20width%3D%2278%22%20height%3D%2221%22%20rx%3D%225%22%20fill%3D%22%238257e5%22%2F%3E%3Ctext%20x%3D%2261%22%20y%3D%2238%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2Csans-serif%22%20font-size%3D%2211%22%20font-weight%3D%22600%22%20fill%3D%22white%22%3ESrivarsan%3C%2Ftext%3E%3C%2Fsvg%3E") 3 2, pointer;
+  }
+
+  :disabled, [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+}
