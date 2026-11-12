@@ -1,0 +1,24 @@
+---
+const { slug } = Astro.props;
+---
+<div class:list={['project-art', 'art-' + slug]} aria-hidden="true">
+  {slug === 'glide' && (
+    <div class="glide-window">
+      <div class="window-bar"><i></i><i></i><i></i><span>GLIDE</span></div>
+      <div class="glide-panel">
+        <div class="glide-canvas"><div class="glide-selection">Aa</div></div>
+        <div class="glide-code"><b>&lt;div&gt;</b><i></i><i></i><i></i><b>&lt;/div&gt;</b></div>
+      </div>
+    </div>
+  )}
+  {slug === 'nexus-solo' && (
+    <div class="agent-graph">
+      <i></i><i></i><i></i><i></i><i></i><strong>N</strong>
+    </div>
+  )}
+  {slug === 'oracan' && (
+    <div class="scan-device">
+      <i></i><i></i><i></i><i></i><b></b><span></span>
+    </div>
+  )}
+</div>

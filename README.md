@@ -1,3 +1,9 @@
+# Srivarsan K’s portfolio
+
+The [portfolio](https://srivarsank.github.io/) is a static Astro site with GSAP animation, profile and project pages, and a sitemap. [Desktop mode](https://srivarsank.github.io/desktop/) runs the Rust and Dioxus experience documented below.
+
+Run `npm install` and `npm run dev` with Node.js 22 or newer. Run `npm run build` to generate the Astro pages. GitHub Actions combines them with the Dioxus build for GitHub Pages.
+
 <div align="center">
   <img src="https://upload.wikimedia.org/wikipedia/commons/d/d5/Rust_programming_language_black_logo.svg" alt="Rust Logo" width="100" height="100" style="margin-right: 20px;">
   <img src="https://avatars.githubusercontent.com/u/79236386?s=200&v=4" alt="Dioxus Logo" width="100" height="100">

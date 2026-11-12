@@ -1,0 +1,104 @@
+---
+import Base from '../layouts/Base.astro';
+import ProjectArt from '../components/ProjectArt.astro';
+import { profile, projects } from '../data/portfolio.js';
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'ProfilePage',
+  url: new URL('/', Astro.site).href,
+  mainEntity: {
+    '@type': 'Person',
+    '@id': new URL('/#person', Astro.site).href,
+    name: profile.name,
+    alternateName: ['K. Srivarsan', 'K Srivarsan'],
+    url: new URL('/', Astro.site).href,
+    image: new URL('/media/srivarsan-hero.webp', Astro.site).href,
+    description: profile.description,
+    sameAs: [profile.linkedin, profile.github],
+    affiliation: { '@type': 'CollegeOrUniversity', name: 'SRM Institute of Science and Technology, Ramapuram' },
+  },
+};
+---
+<Base title={profile.name + ' | ' + profile.title} description={profile.description} schema={schema}>
+  <main id="main">
+    <div class="spread">
+      <figure class="portrait">
+        <div class="portrait-grid" aria-hidden="true"></div>
+        <div class="portrait-sticker" data-hero-art>
+          <img src="/media/srivarsan-hero.webp" srcset="/media/srivarsan-hero-small.webp 460w, /media/srivarsan-hero.webp 920w" sizes="(max-width: 700px) 82vw, (max-width: 1070px) 44vw, 42vw" width="920" height="1150" alt="Srivarsan K in a black blazer, framed by a vermilion paper cutout" fetchpriority="high" decoding="async" />
+        </div>
+        <span class="portrait-mark" aria-hidden="true">sk<span>.</span></span>
+        <span class="portrait-spark" aria-hidden="true">✳</span>
+      </figure>
+      <div class="spread-content">
+        <section class="intro" aria-labelledby="intro-title">
+          <p class="eyebrow" data-hero-copy>{profile.title} <span> / </span> Chennai, India</p>
+          <h1 id="intro-title" data-hero-copy>Hey, I’m <strong>Srivarsan K.</strong></h1>
+          <div class="intro-grid">
+            <div data-hero-copy>
+              <p>I study Artificial Intelligence at SRMIST Ramapuram. I build developer tools that make editing software more visual and AI systems that take repetitive work off people’s hands.</p>
+              <div class="intro-links">
+                <a class="ink-link" rel="me" href={profile.linkedin}>LinkedIn <span aria-hidden="true">↗</span></a>
+                <a class="ink-link" rel="me" href={profile.github}>GitHub <span aria-hidden="true">↗</span></a>
+              </div>
+            </div>
+            <dl class="notes" data-hero-copy>
+              <div><dt>Community</dt><dd>Technical Lead<br/>Developer Students Club</dd></div>
+              <div><dt>Focus</dt><dd>Developer tools<br/>Agentic AI · Edge AI</dd></div>
+            </dl>
+          </div>
+        </section>
+        <section class="work" id="work" aria-labelledby="work-title">
+          <h2 id="work-title" class="eyebrow">Selected work</h2>
+          <div class="prints">
+            {projects.map((project) => (
+              <article class="print" data-print>
+                <a class="print-link" href={'/projects/' + project.slug + '/'}>
+                  <ProjectArt slug={project.slug} />
+                  <div class="print-caption"><h3>{project.name}</h3><span aria-hidden="true">↗</span></div>
+                  <p>{project.summary}</p>
+                </a>
+              </article>
+            ))}
+          </div>
+        </section>
+      </div>
+    </div>
+    <section class="contact-strip" id="contact" data-contact aria-labelledby="contact-title">
+      <div><h2 id="contact-title">Let’s build something.</h2><p>Get in touch about open source, student projects, or internships.</p></div>
+      <a class="ink-link" href={'mailto:' + profile.email}>Email me <span aria-hidden="true">↗</span></a>
+    </section>
+  </main>
+  <script>
+    import { gsap } from 'gsap';
+
+    const motion = gsap.matchMedia();
+    motion.add('(prefers-reduced-motion: no-preference)', () => {
+      const intro = gsap.timeline({ defaults: { ease: 'power3.out', duration: 0.72 } })
+        .from('[data-hero-art]', { scale: 0.96, rotation: -3, transformOrigin: '50% 100%' })
+        .from('[data-hero-copy]', { y: 14, opacity: 0.55, stagger: 0.065 }, 0.12)
+        .from('[data-print]', { y: 16, opacity: 0.7, stagger: 0.08 }, 0.3);
+
+      const contact = document.querySelector('[data-contact]');
+      let contactEntrance;
+      const observer = new IntersectionObserver(([entry]) => {
+        if (!entry.isIntersecting) return;
+        observer.disconnect();
+        contactEntrance = gsap.from(contact.children, {
+          y: 12, opacity: 0.6, duration: 0.45, stagger: 0.08, clearProps: 'transform,opacity',
+        });
+      }, { threshold: 0.4 });
+
+      if (contact && contact.getBoundingClientRect().top >= window.innerHeight) {
+        observer.observe(contact);
+      }
+
+      return () => {
+        observer.disconnect();
+        contactEntrance?.revert();
+        intro.revert();
+      };
+    });
+  </script>
+</Base>

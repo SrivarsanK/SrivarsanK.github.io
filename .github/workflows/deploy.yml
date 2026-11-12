@@ -4,6 +4,8 @@ on:
   push:
     branches: ["main"]
   workflow_dispatch:
+  pull_request:
+    branches: ["main"]
   schedule:
     - cron: '17 */6 * * *'
 
@@ -13,18 +15,25 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: pages-${{ github.event_name == 'pull_request' && github.ref || 'production' }}
   cancel-in-progress: true
 
 jobs:
   build-and-deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build Astro portfolio
+        run: |
+          npm install --no-audit --no-fund
+          npm run build
 
       - name: Refresh portfolio from GitHub
         run: python3 scripts/sync_portfolio.py
@@ -51,23 +60,39 @@ jobs:
         env:
           API_URL: ${{ secrets.API_URL }}
 
-      - name: Copy Root Files (Google Verification, Sitemap, Robots)
+      - name: Assemble and check Pages output
         run: |
-          cp google57407e739a6d98db.html target/dx/web/release/web/public/
-          cp sitemap.xml target/dx/web/release/web/public/
-          cp robots.txt target/dx/web/release/web/public/
+          mkdir -p dist/desktop
+          cp -a target/dx/web/release/web/public/. dist/desktop/
+          sed -i 's#</head>#<meta name="robots" content="noindex"></head>#' dist/desktop/index.html
+          if test -f dist/about.html/index.html; then
+            mv dist/about.html/index.html dist/about-page.html
+            rmdir dist/about.html
+            mv dist/about-page.html dist/about.html
+          fi
+          test -f dist/about.html
+          test -f dist/projects/nexus-solo/index.html
+          test -f dist/google57407e739a6d98db.html
+          test -f dist/media/srivarsan-hero.webp
+          grep -q 'github.com/SrivarsanK/aws_a4b' dist/projects/nexus-solo/index.html
+          grep -q 'https://srivarsank.github.io/projects/nexus-solo/' dist/sitemap.xml
+          grep -q '/desktop/' dist/desktop/index.html
 
-      - name: Publish searchable profile and metadata
-        run: python3 scripts/publish_profile.py target/dx/web/release/web/public
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-
-      - name: Upload artifact
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "target/dx/web/release/web/public"
+          path: dist
 
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build-and-deploy
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Configure Pages
+        uses: actions/configure-pages@v4
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
