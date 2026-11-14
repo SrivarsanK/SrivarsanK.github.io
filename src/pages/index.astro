@@ -179,6 +179,7 @@ const trailPath = stops.map((_, i) => (i === 0 ? 'M0 0' : 'C' + ((i - 1) % 2) + 
   <script>
     import { gsap } from 'gsap';
     import { ScrollTrigger } from 'gsap/ScrollTrigger';
+    import { uncrumple } from '../scripts/paper';
 
     gsap.registerPlugin(ScrollTrigger);
 
@@ -265,6 +266,8 @@ const trailPath = stops.map((_, i) => (i === 0 ? 'M0 0' : 'C' + ((i - 1) % 2) + 
       };
       enter('[data-head], [data-contact] > *', { opacity: 0, y: 28 });
       enter('[data-print]', { opacity: 0, y: 48, rotation: (i) => (i % 2 ? 6 : -6) });
+      // Each screenshot lands crumpled and smooths flat as its card drops in.
+      ScrollTrigger.batch('[data-print] [data-paper]', { start: 'top 92%', once: true, onEnter: (batch) => batch.forEach((shot, i) => uncrumple(gsap, shot as HTMLElement, i * 0.07)) });
       enter('[data-folder]', { opacity: 0, y: 64 });
       enter('[data-note]', { opacity: 0, scale: 0.7, rotation: 12 }, { duration: 0.6, ease: 'back.out(2)' });
 

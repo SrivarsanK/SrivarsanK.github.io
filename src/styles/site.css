@@ -309,8 +309,16 @@ h1 em, h2 em { color: var(--red); font: italic 500 1.02em/1 var(--serif); letter
 .route-card span { display: block; margin-top: 0.25rem; color: var(--red); font-size: 0.82rem; font-weight: 700; }
 .route-card p { margin-top: 0.4rem; color: var(--muted); font-size: 0.9rem; line-height: 1.42; }
 
-.shot { overflow: hidden; border: 1px solid var(--edge); border-radius: 6px; background: var(--ink-deep); }
-.shot-view { overflow: hidden; aspect-ratio: 16 / 10; }
+/* A screenshot printed on paper and torn out: the sheet's torn edge shows a white rim around the print's own, deeper tear,
+   creases are laid over both, and the shadow follows the tear because it is a drop-shadow, not a box-shadow. */
+.shot { position: relative; isolation: isolate; --crumple: 0.5; filter: drop-shadow(1px 5px 6px var(--shade-3)); }
+.shot.is-crumpling { filter: var(--warp) drop-shadow(1px 5px 6px var(--shade-3)); }
+.shot::before, .shot::after { content: ''; position: absolute; inset: 0; pointer-events: none; -webkit-mask: var(--tear-paper) 0 0 / 100% 100% no-repeat; mask: var(--tear-paper) 0 0 / 100% 100% no-repeat; }
+.shot::before { z-index: -1; background: var(--sheet); }
+.shot::after { background: url('/media/paper/crease.webp') 0 0 / 100% 100%; mix-blend-mode: hard-light; opacity: var(--crumple); }
+/* hard-light, not overlay: on a dark screenshot overlay swallows the light crease lines, hard-light lets them catch the light. */
+.shot-warp { position: absolute; width: 0; height: 0; }
+.shot-view { overflow: hidden; aspect-ratio: 16 / 10; -webkit-mask: var(--tear-print) 0 0 / 100% 100% no-repeat; mask: var(--tear-print) 0 0 / 100% 100% no-repeat; }
 .shot-view img { width: 100%; height: 100%; object-fit: cover; transition: scale 500ms cubic-bezier(.2, .8, .2, 1); }
 
 .contact-strip {
@@ -366,8 +374,9 @@ h1 em, h2 em { color: var(--red); font: italic 500 1.02em/1 var(--serif); letter
 .case-facts div { display: flex; justify-content: space-between; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid var(--line); }
 .case-facts dt { color: var(--muted); font-size: 0.88rem; }
 .case-facts dd { font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
-.case-shot { margin-top: clamp(2rem, 5vw, 4rem); box-shadow: 0 30px 60px -20px var(--shade-5), 0 10px 20px -10px var(--shade-3); }
-.case-shot .shot { border-radius: 10px; }
+.case-shot { margin-top: clamp(2rem, 5vw, 4rem); }
+.case-shot .shot { filter: drop-shadow(2px 16px 18px var(--shade-4)); }
+.case-shot .shot.is-crumpling { filter: var(--warp) drop-shadow(2px 16px 18px var(--shade-4)); }
 .case-body {
   display: grid; grid-template-columns: minmax(14rem, 1fr) minmax(0, 2.4fr); gap: clamp(2rem, 6vw, 6rem);
   margin-top: clamp(3rem, 7vw, 6rem);

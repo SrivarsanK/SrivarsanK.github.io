@@ -70,15 +70,15 @@ fn App() -> Element {
         document::Link { rel: "icon", href: FAVICON }
         document::Link { rel: "stylesheet", href: MAIN_CSS }
 
-        document::Meta { property: "og:title", content: "Srivarsan K | AI & Full-Stack Developer" }
-        document::Meta { property: "og:description", content: "Srivarsan K (K Srivarsan), AI and full-stack developer at SRMIST Ramapuram, Chennai. Building Glide. Find projects, GitHub and the official LinkedIn profile." }
-        document::Meta { property: "og:image", content: "https://srivarsank.github.io/assets/favicon.png" }
+        document::Meta { property: "og:title", content: "Srivarsan K | Desktop mode" }
+        document::Meta { property: "og:description", content: "Srivarsan K is an open-source AI and full-stack developer in Chennai, building developer tools and AI in TypeScript, Python and Rust. This is his desktop-style portfolio." }
+        document::Meta { property: "og:image", content: "https://srivarsank.github.io/media/social-card.jpg" }
         document::Meta { property: "og:url", content: "https://srivarsank.github.io" }
         document::Meta { property: "og:type", content: "website" }
-        document::Meta { name: "twitter:card", content: "summary" }
-        document::Meta { name: "twitter:title", content: "Srivarsan K | AI & Full-Stack Developer" }
-        document::Meta { name: "twitter:description", content: "Srivarsan K (K Srivarsan), AI and full-stack developer at SRMIST Ramapuram, Chennai. Building Glide. Find projects, GitHub and the official LinkedIn profile." }
-        document::Meta { name: "twitter:image", content: "https://srivarsank.github.io/assets/favicon.png" }
+        document::Meta { name: "twitter:card", content: "summary_large_image" }
+        document::Meta { name: "twitter:title", content: "Srivarsan K | Desktop mode" }
+        document::Meta { name: "twitter:description", content: "Srivarsan K is an open-source AI and full-stack developer in Chennai, building developer tools and AI in TypeScript, Python and Rust. This is his desktop-style portfolio." }
+        document::Meta { name: "twitter:image", content: "https://srivarsank.github.io/media/social-card.jpg" }
 
         match os_state() {
             OsState::Booting => {
