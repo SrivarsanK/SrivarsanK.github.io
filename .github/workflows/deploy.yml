@@ -34,6 +34,9 @@ jobs:
         run: |
           npm install --no-audit --no-fund
           npm run build
+        env:
+          # The build reads each project's star count from GitHub.
+          GITHUB_TOKEN: ${{ github.token }}
 
       - name: Refresh portfolio from GitHub
         run: python3 scripts/sync_portfolio.py
@@ -72,6 +75,9 @@ jobs:
           fi
           test -f dist/about.html
           test -f dist/projects/nexus-solo/index.html
+          test -f dist/projects/ridesuraksha/index.html
+          test -f dist/media/projects/glide.webp
+          grep -q 'id="path"' dist/index.html
           test -f dist/google57407e739a6d98db.html
           test -f dist/media/srivarsan-hero.webp
           grep -q 'github.com/SrivarsanK/aws_a4b' dist/projects/nexus-solo/index.html

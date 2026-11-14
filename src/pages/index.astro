@@ -1,7 +1,8 @@
 ---
 import Base from '../layouts/Base.astro';
 import ProjectArt from '../components/ProjectArt.astro';
-import { profile, projects } from '../data/portfolio.js';
+import Stars from '../components/Stars.astro';
+import { profile, projects, skillGroups, usedIn, monthLabel } from '../data/portfolio.js';
 
 const schema = {
   '@context': 'https://schema.org',
@@ -15,14 +16,42 @@ const schema = {
     url: new URL('/', Astro.site).href,
     image: new URL('/media/srivarsan-hero.webp', Astro.site).href,
     description: profile.description,
+    jobTitle: profile.title,
+    knowsAbout: ['Open source', ...skillGroups.flatMap((group) => group.skills)],
+    homeLocation: { '@type': 'Place', name: 'Chennai, India' },
     sameAs: [profile.linkedin, profile.github],
     affiliation: { '@type': 'CollegeOrUniversity', name: 'SRM Institute of Science and Technology, Ramapuram' },
   },
 };
+
+const totalStars = projects.reduce((sum, project) => sum + project.stars, 0);
+const publicRepos = projects.filter((project) => project.repository).length;
+// Most-used first, so a recruiter's eye lands on the skills with the most proof behind them.
+const byUse = (skills) => [...skills].sort((a, b) => usedIn(b).length - usedIn(a).length);
+
+const stops = [
+  ['hello', 'Hello', ''],
+  ['work', 'Work', projects.length + ' things I built'],
+  ['stack', 'Stack', 'what I build with'],
+  ['path', 'Path', 'how I got here'],
+  ['contact', 'Contact', 'say hello'],
+];
+
+const path = [...projects].sort((a, b) => a.started.localeCompare(b.started));
+// The route weaves between x=22 and x=78, with one 100-unit row per stop; pins sit at the same points in CSS.
+const routeX = (i) => (i % 2 ? 78 : 22);
+const route = path.map((_, i) => (i === 0
+  ? 'M' + routeX(0) + ' 50'
+  : 'C' + routeX(i - 1) + ' ' + i * 100 + ' ' + routeX(i) + ' ' + i * 100 + ' ' + routeX(i) + ' ' + (i * 100 + 50))).join('');
 ---
 <Base title={profile.name + ' | ' + profile.title} description={profile.description} schema={schema}>
+  <nav class="trail" aria-label="Sections of this page">
+    <ol>
+      {stops.map(([id, label]) => <li><a href={'#' + id} data-trail={id}><span>{label}</span></a></li>)}
+    </ol>
+  </nav>
   <main id="main">
-    <div class="spread">
+    <div class="spread" id="hello">
       <figure class="portrait">
         <div class="portrait-grid" aria-hidden="true"></div>
         <div class="portrait-sticker" data-hero-art>
@@ -30,75 +59,198 @@ const schema = {
         </div>
         <span class="portrait-mark" aria-hidden="true">sk<span>.</span></span>
         <span class="portrait-spark" aria-hidden="true">✳</span>
+        <p class="note note-hero">Open to internships</p>
       </figure>
       <div class="spread-content">
         <section class="intro" aria-labelledby="intro-title">
-          <p class="eyebrow" data-hero-copy>{profile.title} <span> / </span> Chennai, India</p>
-          <h1 id="intro-title" data-hero-copy>Hey, I’m <strong>Srivarsan K.</strong></h1>
+          <h1 id="intro-title" data-hero-copy><em>Hey, I’m</em> <strong>Srivarsan K.</strong></h1>
           <div class="intro-grid">
             <div data-hero-copy>
-              <p>I study Artificial Intelligence at SRMIST Ramapuram. I build developer tools that make editing software more visual and AI systems that take repetitive work off people’s hands.</p>
+              <p>I’m an open-source AI and full-stack developer in Chennai, building developer tools and AI systems while I study at SRMIST Ramapuram.</p>
               <div class="intro-links">
                 <a class="ink-link" rel="me" href={profile.linkedin}>LinkedIn <span aria-hidden="true">↗</span></a>
                 <a class="ink-link" rel="me" href={profile.github}>GitHub <span aria-hidden="true">↗</span></a>
               </div>
             </div>
             <dl class="notes" data-hero-copy>
+              <div><dt>Open source</dt><dd>{totalStars} GitHub stars<br/>across {publicRepos} public repos</dd></div>
               <div><dt>Community</dt><dd>Technical Lead<br/>Developer Students Club</dd></div>
               <div><dt>Focus</dt><dd>Developer tools<br/>Agentic AI · Edge AI</dd></div>
             </dl>
           </div>
-        </section>
-        <section class="work" id="work" aria-labelledby="work-title">
-          <h2 id="work-title" class="eyebrow">Selected work</h2>
-          <div class="prints">
-            {projects.map((project) => (
-              <article class="print" data-print>
-                <a class="print-link" href={'/projects/' + project.slug + '/'}>
-                  <ProjectArt slug={project.slug} />
-                  <div class="print-caption"><h3>{project.name}</h3><span aria-hidden="true">↗</span></div>
-                  <p>{project.summary}</p>
-                </a>
-              </article>
-            ))}
-          </div>
+          <ol class="route-preview" aria-label="What’s on this page" data-hero-copy>
+            {stops.slice(1).map(([id, label, caption]) => <li><a href={'#' + id}><b>{label}</b><span>{caption}</span></a></li>)}
+          </ol>
         </section>
       </div>
     </div>
+
+    <section class="band" id="work" aria-labelledby="work-title">
+      <header class="section-head" data-head>
+        <h2 id="work-title">Things I’ve <em>shipped</em></h2>
+        <p>Ranked by GitHub stars, most first. Every screenshot is the project running on my machine.</p>
+      </header>
+      <ol class="prints">
+        {projects.map((project, i) => (
+          <li class:list={['print', i === 0 && 'print-lead']} data-print>
+            <a class="print-link" href={'/projects/' + project.slug + '/'}>
+              <b class="rank"><span class="sr-only">Rank </span>#{i + 1}</b>
+              <ProjectArt project={project} />
+              <div class="print-caption"><h3>{project.name}</h3><Stars project={project} /></div>
+              <p>{project.summary}</p>
+              <ul class="stack" aria-label="Main technologies">{project.stack.slice(0, 3).map((item) => <li>{item}</li>)}</ul>
+            </a>
+          </li>
+        ))}
+        <li class="note-slot"><a class="note note-more" data-note href={profile.github}>More experiments on GitHub <span aria-hidden="true">↗</span></a></li>
+      </ol>
+    </section>
+
+    <section class="band" id="stack" aria-labelledby="stack-title">
+      <header class="section-head" data-head>
+        <h2 id="stack-title">What I <em>build with</em></h2>
+        <p>Each tool links to the projects where I used it.</p>
+      </header>
+      <div class="drawer">
+        {skillGroups.map((group) => (
+          <section class="folder" data-folder>
+            <h3 class="folder-tab">{group.name}</h3>
+            <ul class="folder-sheet">
+              {byUse(group.skills).map((skill) => (
+                <li>
+                  <span class="skill">{skill}{usedIn(skill).length > 0 && <small class="skill-count">{usedIn(skill).length} {usedIn(skill).length === 1 ? 'project' : 'projects'}</small>}</span>
+                  <span class="skill-used">{usedIn(skill).map((project) => <a href={'/projects/' + project.slug + '/'}>{project.name}</a>)}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+    </section>
+
+    <section class="band" id="path" aria-labelledby="path-title">
+      <header class="section-head" data-head>
+        <h2 id="path-title">How I <em>got here</em></h2>
+        <p>{path.length} builds since {monthLabel(path[0].started)}, in the order I started them.</p>
+      </header>
+      <p class="note note-path" data-note>Alongside all of this, I’m a Technical Lead at the Developer Students Club. I coordinated Technorally 2.0 and co-organized DevSummit ’26.</p>
+      <div class="route">
+        <svg class="route-line" viewBox={'0 0 100 ' + path.length * 100} preserveAspectRatio="none" aria-hidden="true"><path d={route} /></svg>
+        <ol>
+          {path.map((project) => (
+            <li class="route-stop" data-stop>
+              <time datetime={project.started}>{monthLabel(project.started)}</time>
+              <i class="route-pin" aria-hidden="true"></i>
+              <a class="route-card" href={'/projects/' + project.slug + '/'}>
+                <strong>{project.name}</strong>
+                <span>{project.context}</span>
+                <p>{project.summary}</p>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+
     <section class="contact-strip" id="contact" data-contact aria-labelledby="contact-title">
-      <div><h2 id="contact-title">Let’s build something.</h2><p>Get in touch about open source, student projects, or internships.</p></div>
-      <a class="ink-link" href={'mailto:' + profile.email}>Email me <span aria-hidden="true">↗</span></a>
+      <div>
+        <h2 id="contact-title">Let’s build <em>something.</em></h2>
+        <p>Hiring, open source, or want my résumé? Send a message and I’ll reply by email.</p>
+        <div class="intro-links"><a class="ink-link" rel="me" href={profile.linkedin}>LinkedIn <span aria-hidden="true">↗</span></a></div>
+      </div>
+      <!-- shortcut: FormSubmit relays to the inbox from a static page; swap the address for its random alias after activation, or host api/contact.rs if you need full control. -->
+      <form class="contact-form" action={'https://formsubmit.co/' + profile.email} method="POST" data-contact-form>
+        <label>Your email<input type="email" name="email" required autocomplete="email" maxlength="200" /></label>
+        <label>Subject<input type="text" name="_subject" required maxlength="150" /></label>
+        <label>Message<textarea name="message" required rows="5" maxlength="5000"></textarea></label>
+        <input class="sr-only" type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true" />
+        <input type="hidden" name="_template" value="table" />
+        <button type="submit">Send message <span aria-hidden="true">→</span></button>
+        <p class="contact-status" role="status" data-contact-status></p>
+      </form>
     </section>
   </main>
   <script>
     import { gsap } from 'gsap';
+    import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-    const motion = gsap.matchMedia();
-    motion.add('(prefers-reduced-motion: no-preference)', () => {
-      const intro = gsap.timeline({ defaults: { ease: 'power3.out', duration: 0.72 } })
-        .from('[data-hero-art]', { scale: 0.96, rotation: -3, transformOrigin: '50% 100%' })
-        .from('[data-hero-copy]', { y: 14, opacity: 0.55, stagger: 0.065 }, 0.12)
-        .from('[data-print]', { y: 16, opacity: 0.7, stagger: 0.08 }, 0.3);
+    gsap.registerPlugin(ScrollTrigger);
 
-      const contact = document.querySelector('[data-contact]');
-      let contactEntrance;
-      const observer = new IntersectionObserver(([entry]) => {
-        if (!entry.isIntersecting) return;
-        observer.disconnect();
-        contactEntrance = gsap.from(contact.children, {
-          y: 12, opacity: 0.6, duration: 0.45, stagger: 0.08, clearProps: 'transform,opacity',
-        });
-      }, { threshold: 0.4 });
+    // The trail marks the last section whose top has passed the middle of the viewport. It is navigation, not motion, so it runs for everyone.
+    const trail = [...document.querySelectorAll('[data-trail]')];
+    const sections = trail.map((link) => document.getElementById(link.dataset.trail));
+    const markTrail = () => {
+      // The last section is too short to reach the middle, so the bottom of the page counts as arriving there.
+      const atEnd = innerHeight + scrollY >= document.documentElement.scrollHeight - 2;
+      const at = atEnd ? trail.length - 1 : Math.max(0, sections.findLastIndex((section) => section.getBoundingClientRect().top <= innerHeight / 2));
+      trail.forEach((link, i) => {
+        link.classList.toggle('is-done', i < at);
+        if (i === at) link.setAttribute('aria-current', 'location');
+        else link.removeAttribute('aria-current');
+      });
+    };
+    addEventListener('scroll', markTrail, { passive: true });
+    markTrail();
 
-      if (contact && contact.getBoundingClientRect().top >= window.innerHeight) {
-        observer.observe(contact);
+    // Without JavaScript the form still posts normally; with it, the reader stays on the page.
+    const form = document.querySelector<HTMLFormElement>('[data-contact-form]')!;
+    const status = form.querySelector('[data-contact-status]')!;
+    const moves = () => matchMedia('(prefers-reduced-motion: no-preference)').matches;
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const button = form.querySelector('button')!;
+      button.disabled = true;
+      status.textContent = 'Sending…';
+      try {
+        const response = await fetch(form.action.replace('formsubmit.co/', 'formsubmit.co/ajax/'), { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
+        if (!response.ok || String((await response.json()).success) !== 'true') throw new Error();
+        form.reset();
+        status.textContent = 'Thanks! Your message is on its way.';
+        if (moves()) gsap.fromTo(status, { scale: 0.85, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: 'back.out(2.2)' });
+      } catch {
+        // Typed text is kept, so nothing is lost on failure.
+        status.textContent = 'That didn’t send. Please try again, or reach me on LinkedIn.';
+        if (moves()) gsap.fromTo(form, { x: 0 }, { keyframes: { x: [-6, 6, -4, 0] }, duration: 0.35, ease: 'power1.inOut' });
       }
+      button.disabled = false;
+    });
 
-      return () => {
-        observer.disconnect();
-        contactEntrance?.revert();
-        intro.revert();
+    gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
+      gsap.timeline({ defaults: { ease: 'power3.out', duration: 0.72 } })
+        .from('[data-hero-art]', { scale: 0.96, rotation: -3, transformOrigin: '50% 100%' })
+        .from('[data-hero-copy]', { y: 14, opacity: 0.55, stagger: 0.065 }, 0.12);
+
+      // Hidden states are set here rather than in CSS, so the page stays readable if this script never runs.
+      const enter = (targets, from, to = {}) => {
+        gsap.set(targets, from);
+        // Keyboard focus can land on an element before it has scrolled in; show it at once so the focus ring is never on something invisible.
+        for (const el of document.querySelectorAll(targets)) {
+          el.addEventListener('focusin', () => { gsap.killTweensOf(el); gsap.set(el, { opacity: 1, x: 0, y: 0, rotation: 0, scale: 1 }); });
+        }
+        ScrollTrigger.batch(targets, {
+          start: 'top 88%',
+          once: true,
+          // A whole batch lands within 0.4s so a skimming reader is never kept waiting.
+          onEnter: (batch) => gsap.to(batch, { opacity: 1, x: 0, y: 0, rotation: 0, scale: 1, duration: 0.55, ease: 'expo.out', stagger: { amount: Math.min(0.4, (batch.length - 1) * 0.07) }, ...to }),
+        });
       };
+      enter('[data-head], [data-contact] > *', { opacity: 0, y: 28 });
+      enter('[data-print]', { opacity: 0, y: 48, rotation: (i) => (i % 2 ? 6 : -6) });
+      enter('[data-folder]', { opacity: 0, y: 64 });
+      enter('[data-note]', { opacity: 0, scale: 0.7, rotation: 12 }, { duration: 0.6, ease: 'back.out(2)' });
+
+      // The route draws itself as the reader scrolls, and each stop lands as the line reaches it.
+      gsap.fromTo('.route-line', { clipPath: 'inset(0 0 100% 0)' }, {
+        clipPath: 'inset(0 0 0% 0)', ease: 'none',
+        scrollTrigger: { trigger: '.route', start: 'top 75%', end: 'bottom 65%', scrub: 0.5 },
+      });
+      for (const stop of document.querySelectorAll('[data-stop]')) {
+        stop.addEventListener('focusin', () => { gsap.killTweensOf(stop.children); gsap.set(stop.children, { opacity: 1, y: 0 }); });
+        gsap.from(stop.children, {
+          opacity: 0, y: 20, duration: 0.7, ease: 'expo.out', stagger: 0.08,
+          scrollTrigger: { trigger: stop, start: 'center 76%', once: true },
+        });
+      }
     });
   </script>
 </Base>
