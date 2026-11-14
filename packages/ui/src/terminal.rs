@@ -306,41 +306,16 @@ pub fn Terminal(props: TerminalProps) -> Element {
                     };
 
                     spawn(async move {
-                        let api_base = option_env!("API_URL").map(|s| s.to_string()).unwrap_or_else(|| {
-                            let mut origin = web_sys::window()
-                                .and_then(|w| w.location().origin().ok())
-                                .unwrap_or_default();
-                            if origin.contains("localhost") || origin.contains("127.0.0.1") {
-                                "http://localhost:3000".to_string()
-                            } else {
-                                origin
-                            }
-                        });
-
-                        let body = serde_json::to_string(&form_data).unwrap_or_default();
-
-                        let res = gloo_net::http::Request::post(&format!("{}/api/contact", api_base))
-                            .header("Content-Type", "application/json")
-                            .body(&body)
-                            .unwrap()
-                            .send()
-                            .await;
+                        let res = crate::contact::send_contact(&form_data).await;
 
                         let mut l = lines.write();
                         if let Some(pos) = l.iter().position(|x| x.id == out_id) {
                             match res {
-                                Ok(response) if response.ok() => {
+                                Ok(()) => {
                                     l[pos] = TerminalLine {
                                         id: out_id,
                                         line_type: LineType::Info,
                                         content: "Message sent successfully!".to_string(),
-                                    };
-                                }
-                                Ok(response) => {
-                                    l[pos] = TerminalLine {
-                                        id: out_id,
-                                        line_type: LineType::Error,
-                                        content: format!("Failed to send: HTTP {}", response.status()),
                                     };
                                 }
                                 Err(e) => {

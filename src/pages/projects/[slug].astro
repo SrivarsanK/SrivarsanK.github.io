@@ -1,13 +1,14 @@
 ---
 import Base from '../../layouts/Base.astro';
 import ProjectArt from '../../components/ProjectArt.astro';
-import { profile, projects } from '../../data/portfolio.js';
+import Stars from '../../components/Stars.astro';
+import { profile, projects, monthLabel } from '../../data/portfolio.js';
 
 export function getStaticPaths() {
-  return projects.map((project) => ({ params: { slug: project.slug }, props: { project } }));
+  return projects.map((project, i) => ({ params: { slug: project.slug }, props: { project, rank: i + 1, next: projects[(i + 1) % projects.length] } }));
 }
 
-const { project } = Astro.props;
+const { project, rank, next } = Astro.props;
 const schema = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareSourceCode',
@@ -18,18 +19,47 @@ const schema = {
 };
 ---
 <Base title={project.name + ' | ' + project.category + ' | ' + profile.name} description={project.summary} schema={schema}>
-  <main id="main" class="detail">
-    <a class="ink-link" href="/#work">← Selected work</a>
-    <div class="detail-grid">
-      <article>
-        <p class="eyebrow">{project.category}</p>
-        <h1><strong>{project.name}</strong></h1>
-        <p class="lede">{project.summary}</p>
+  <main id="main" class="case">
+    <a class="ink-link" href="/#work">← All projects</a>
+    <header class="case-head" data-enter>
+      <h1>{project.name}</h1>
+      <p class="case-lede">{project.summary}</p>
+      <div class="case-actions">
+        {project.live && <a class="btn btn-solid" href={project.live}>Open the live site <span aria-hidden="true">↗</span></a>}
+        {project.repository && <a class:list={['btn', project.live ? 'btn-line' : 'btn-solid']} href={project.repository}>Read the source <span aria-hidden="true">↗</span></a>}
+      </div>
+      <dl class="case-facts">
+        <div><dt>GitHub</dt><dd><Stars project={project} /></dd></div>
+        <div><dt>Rank</dt><dd>#{rank} of {projects.length} by stars</dd></div>
+        <div><dt>Started</dt><dd>{monthLabel(project.started)}</dd></div>
+        <div><dt>Built for</dt><dd>{project.context}</dd></div>
+      </dl>
+    </header>
+    <div class="case-shot" data-enter><ProjectArt project={project} describe eager /></div>
+    <div class="case-body">
+      <aside>
+        <h2>Built with</h2>
         <ul class="stack" aria-label="Technology stack">{project.stack.map((item) => <li>{item}</li>)}</ul>
+        <p class="case-kind">{project.category}</p>
+      </aside>
+      <div class="case-sections">
         {project.sections.map(([heading, copy]) => <section><h2>{heading}</h2><p>{copy}</p></section>)}
-        <a class="ink-link" href={project.repository}>View source on GitHub ↗</a>
-      </article>
-      <figure class="detail-print"><ProjectArt slug={project.slug} /><figcaption>{project.name}</figcaption></figure>
+      </div>
     </div>
+    <a class="case-next" href={'/projects/' + next.slug + '/'}>
+      <span class="case-next-label">Next project</span>
+      <strong>{next.name} <span aria-hidden="true">→</span></strong>
+      <span class="case-next-summary">{next.summary}</span>
+      <ProjectArt project={next} />
+    </a>
   </main>
+  <script>
+    import { gsap } from 'gsap';
+
+    gsap.matchMedia().add('(prefers-reduced-motion: no-preference)', () => {
+      gsap.timeline({ defaults: { ease: 'expo.out', duration: 1 } })
+        .from('.case-head > *', { y: 24, opacity: 0, stagger: 0.07 })
+        .from('.case-shot', { y: 60, opacity: 0, scale: 0.97, duration: 1.2 }, 0.2);
+    });
+  </script>
 </Base>

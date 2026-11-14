@@ -706,10 +706,10 @@ body {
   }
 }
 
-/* Custom Cursor Among Us packs. Source: https://custom-cursor.com/en/collection/among-us */
+/* Custom Cursor Among Us packs, self-hosted in public/cursors because the source CDN blocks cross-site loads. Source: https://custom-cursor.com/en/collection/among-us */
 :root {
-  --desktop-cursor: url("https://cdn.custom-cursor.com/db/28666/32/among-us-white-chiikawa-character-cursor.png") 0 0, auto;
-  --desktop-pointer: url("https://cdn.custom-cursor.com/db/28665/32/among-us-white-chiikawa-character-pointer.png") 0 0, pointer;
+  --desktop-cursor: url("/cursors/among-us-white-chiikawa-character-cursor.png") 0 0, auto;
+  --desktop-pointer: url("/cursors/among-us-white-chiikawa-character-pointer.png") 0 0, pointer;
 }
 @media (hover: hover) and (pointer: fine) {
   html, body, body * { cursor: var(--desktop-cursor) !important; }

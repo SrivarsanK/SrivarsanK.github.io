@@ -1,0 +1,6 @@
+---
+const { project } = Astro.props;
+---
+{project.repository
+  ? <span class="stars"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 .9l2.2 4.6 5 .7-3.6 3.5.9 5L8 12.3l-4.5 2.4.9-5L.8 6.2l5-.7z" /></svg>{project.stars}<span class="sr-only"> stars on GitHub</span></span>
+  : <span class="stars stars-private">Private repo</span>}
