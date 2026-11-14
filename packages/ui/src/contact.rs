@@ -1,5 +1,39 @@
 use dioxus::prelude::*;
 
+/// Sends a contact message. With `API_URL` set at build time it goes to that server's `/api/contact`;
+/// otherwise through FormSubmit, which relays to the inbox from a static page.
+pub async fn send_contact(form: &shared::ContactForm) -> Result<(), String> {
+    let api = option_env!("API_URL").filter(|base| !base.is_empty());
+    let (url, body) = match api {
+        Some(base) => (format!("{base}/api/contact"), serde_json::to_string(form)),
+        None => (
+            "https://formsubmit.co/ajax/srivarsankannan@gmail.com".to_string(),
+            serde_json::to_string(&serde_json::json!({
+                "name": form.name, "email": form.email, "_subject": form.subject, "message": form.message, "_template": "table",
+            })),
+        ),
+    };
+    let response = gloo_net::http::Request::post(&url)
+        .header("Content-Type", "application/json")
+        .header("Accept", "application/json")
+        .body(body.map_err(|e| e.to_string())?)
+        .map_err(|e| e.to_string())?
+        .send()
+        .await
+        .map_err(|e| e.to_string())?;
+    if !response.ok() {
+        return Err(format!("HTTP {}", response.status()));
+    }
+    if api.is_none() {
+        // FormSubmit answers 200 even when it refuses (e.g. before the inbox confirms activation).
+        let reply: serde_json::Value = response.json().await.map_err(|e| e.to_string())?;
+        if reply["success"] != "true" && reply["success"] != true {
+            return Err(reply["message"].as_str().unwrap_or("the relay refused the message").to_string());
+        }
+    }
+    Ok(())
+}
+
 #[component]
 pub fn ContactForm() -> Element {
     let mut name = use_signal(|| String::new());
@@ -29,39 +63,7 @@ pub fn ContactForm() -> Element {
             message: message(),
         };
 
-        let api_base = option_env!("API_URL").map(|s| s.to_string()).unwrap_or_else(|| {
-            let mut origin = web_sys::window()
-                .and_then(|w| w.location().origin().ok())
-                .unwrap_or_default();
-            if origin.contains("localhost") || origin.contains("127.0.0.1") {
-                "http://localhost:3000".to_string()
-            } else {
-                origin
-            }
-        });
-
-        let body = serde_json::to_string(&form_data).unwrap_or_default();
-
-        let result = gloo_net::http::Request::post(&format!("{}/api/contact", api_base))
-            .header("Content-Type", "application/json")
-            .body(&body)
-            .unwrap()
-            .send()
-            .await;
-
-        let result = match result {
-            Ok(response) => {
-                if response.ok() {
-                    Ok(())
-                } else {
-                    let text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
-                    Err(text)
-                }
-            }
-            Err(e) => Err(e.to_string()),
-        };
-
-        match result {
+        match send_contact(&form_data).await {
             Ok(_) => {
                 *submission_status.write() = Some("Message sent successfully!".to_string());
                 *name.write() = String::new();

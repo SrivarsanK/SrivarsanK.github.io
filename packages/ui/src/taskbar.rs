@@ -39,12 +39,12 @@ struct CursorPack {
 
 const CURSOR_PACKS: &[CursorPack] = &[
     CursorPack { id: "system", name: "System cursor", cursor: "", pointer: "" },
-    CursorPack { id: "chiikawa", name: "White Chiikawa", cursor: "https://cdn.custom-cursor.com/db/28666/32/among-us-white-chiikawa-character-cursor.png", pointer: "https://cdn.custom-cursor.com/db/28665/32/among-us-white-chiikawa-character-pointer.png" },
-    CursorPack { id: "among-us-beige-one-piece-roronoa-zoro", name: "Beige One Piece Roronoa Zoro Character", cursor: "https://cdn.custom-cursor.com/db/29018/32/among-us-beige-roronoa-zoro-character-cursor.png", pointer: "https://cdn.custom-cursor.com/db/29017/32/among-us-beige-roronoa-zoro-character-pointer.png" },
-    CursorPack { id: "among-us-red-topaz", name: "Red Topaz Character", cursor: "https://cdn.custom-cursor.com/db/29066/32/among-us-red-topaz-character-cursor.png", pointer: "https://cdn.custom-cursor.com/db/29065/32/among-us-red-topaz-character-pointer.png" },
-    CursorPack { id: "among-us-green-mnc-zombie", name: "Green Minecraft Zombie Character", cursor: "https://cdn.custom-cursor.com/db/29082/32/among-us-green-minecraft-zombie-character-cursor.png", pointer: "https://cdn.custom-cursor.com/db/29081/32/among-us-green-minecraft-zombie-character-pointer.png" },
-    CursorPack { id: "among-us-yellow-banana-cat", name: "Yellow Banana Cat Character", cursor: "https://cdn.custom-cursor.com/db/28986/32/among-us-yellow-banana-cat-character-cursor.png", pointer: "https://cdn.custom-cursor.com/db/28985/32/among-us-yellow-banana-cat-character-pointer.png" },
-    CursorPack { id: "among-us-purple-vampire", name: "Purple Vampire Character", cursor: "https://cdn.custom-cursor.com/db/28922/32/among-us-purple-vampire-character-cursor.png", pointer: "https://cdn.custom-cursor.com/db/28921/32/among-us-purple-vampire-character-pointer.png" },
+    CursorPack { id: "chiikawa", name: "White Chiikawa", cursor: "/cursors/among-us-white-chiikawa-character-cursor.png", pointer: "/cursors/among-us-white-chiikawa-character-pointer.png" },
+    CursorPack { id: "among-us-beige-one-piece-roronoa-zoro", name: "Beige One Piece Roronoa Zoro Character", cursor: "/cursors/among-us-beige-roronoa-zoro-character-cursor.png", pointer: "/cursors/among-us-beige-roronoa-zoro-character-pointer.png" },
+    CursorPack { id: "among-us-red-topaz", name: "Red Topaz Character", cursor: "/cursors/among-us-red-topaz-character-cursor.png", pointer: "/cursors/among-us-red-topaz-character-pointer.png" },
+    CursorPack { id: "among-us-green-mnc-zombie", name: "Green Minecraft Zombie Character", cursor: "/cursors/among-us-green-minecraft-zombie-character-cursor.png", pointer: "/cursors/among-us-green-minecraft-zombie-character-pointer.png" },
+    CursorPack { id: "among-us-yellow-banana-cat", name: "Yellow Banana Cat Character", cursor: "/cursors/among-us-yellow-banana-cat-character-cursor.png", pointer: "/cursors/among-us-yellow-banana-cat-character-pointer.png" },
+    CursorPack { id: "among-us-purple-vampire", name: "Purple Vampire Character", cursor: "/cursors/among-us-purple-vampire-character-cursor.png", pointer: "/cursors/among-us-purple-vampire-character-pointer.png" },
 ];
 
 #[component]
