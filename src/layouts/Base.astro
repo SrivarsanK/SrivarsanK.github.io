@@ -4,7 +4,7 @@ import '@fontsource-variable/dm-sans/wght.css';
 import '@fontsource-variable/bodoni-moda/wght-italic.css';
 import '@fontsource-variable/caveat/wght.css';
 import '../styles/site.css';
-import { profile } from '../data/portfolio.js';
+import Socials from '../components/Socials.astro';
 
 const { title, description, path = Astro.url.pathname, schema } = Astro.props;
 const canonical = new URL(path, Astro.site);
@@ -51,8 +51,7 @@ const socialImage = new URL('/media/social.jpg', Astro.site);
       <footer class="footer">
         <span>Srivarsan K <span aria-hidden="true">/</span> Chennai, India</span>
         <div class="footer-links">
-          <a rel="me" href={profile.github}>GitHub ↗</a>
-          <a rel="me" href={profile.linkedin}>LinkedIn ↗</a>
+          <Socials />
         </div>
       </footer>
     </div>

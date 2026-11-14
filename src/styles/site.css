@@ -125,16 +125,32 @@ h1 em, h2 em { color: var(--red); font: italic 500 1.02em/1 var(--serif); letter
   text-decoration-thickness: 1px; text-underline-offset: 0.24em;
 }
 .ink-link:hover { text-decoration-thickness: 2px; }
+.socials { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 0.85rem; }
+/* A round icon that opens into a pill with the handle; the hidden column grows instead of the width, so nothing reflows mid-frame. */
+.social {
+  display: inline-grid; grid-template-columns: 20px 0fr; align-items: center; height: 46px; padding: 0 12px;
+  border: 1px solid var(--edge); border-radius: 23px; color: var(--ink); background: var(--sheet); box-shadow: 2px 5px 10px var(--shade-1);
+  text-decoration: none; overflow: hidden;
+  transition: grid-template-columns 320ms cubic-bezier(.2, .8, .2, 1), column-gap 320ms cubic-bezier(.2, .8, .2, 1), translate 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+}
+.social svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: color 200ms ease; }
+.social-text { min-width: 0; overflow: hidden; }
+.social-text span { display: block; padding-right: 0.3rem; font-size: 0.9rem; font-weight: 700; white-space: nowrap; }
+.social:hover, .social:focus-visible { grid-template-columns: 20px 1fr; column-gap: 0.6rem; translate: 0 -2px; border-color: var(--red); }
+.social:hover { box-shadow: 1px 10px 18px var(--shade-2); }
+.social:hover svg, .social:focus-visible svg { color: var(--red); }
 .notes { border-left: 1px solid var(--line); padding-left: clamp(0.85rem, 2vw, 1.5rem); }
 .notes div + div { margin-top: 0.5rem; }
 .notes dt { font-weight: 800; line-height: 1.2; }
 .notes dd { margin-top: 0.15rem; color: var(--muted); font-size: 0.87rem; line-height: 1.45; }
 
 .intro h1 em { display: block; margin-bottom: 0.1em; color: var(--ink); font-size: 0.6em; }
-.route-preview { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); list-style: none; margin: clamp(1.5rem, 3vw, 2.6rem) 0 0; padding: 0; }
+.route-preview { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); list-style: none; margin: 0; padding: 0; }
 .route-preview li { position: relative; padding-top: 1.3rem; }
 .route-preview li::before { content: ''; position: absolute; top: 0; left: 0; width: 0.72rem; aspect-ratio: 1; border-radius: 50%; background: var(--red); }
-.route-preview li:not(:last-child)::after { content: ''; position: absolute; top: 0.28rem; left: 1.1rem; right: 0.38rem; border-top: 2px dotted var(--red); }
+.route-preview-wrap { position: relative; margin-top: clamp(1.5rem, 3vw, 2.6rem); }
+.route-preview-line { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.route-preview-line path { fill: none; stroke: var(--red); stroke-width: 2; stroke-dasharray: 1 6; stroke-linecap: round; }
 .route-preview a { display: block; padding-right: 0.5rem; text-decoration: none; }
 .route-preview b { display: block; font: 800 clamp(1rem, 1.5vw, 1.3rem)/1.1 var(--heading); letter-spacing: -0.03em; }
 .route-preview span { display: block; color: var(--muted); font: 600 clamp(1.05rem, 1.4vw, 1.3rem)/1.05 var(--hand); }
@@ -150,26 +166,45 @@ h1 em, h2 em { color: var(--red); font: italic 500 1.02em/1 var(--serif); letter
 .note-more:hover, .note-more:focus-visible { rotate: 0deg; }
 .note-path { max-width: 21rem; margin: -4.5rem 2% 2rem auto; rotate: 2deg; }
 
-.trail { position: fixed; z-index: 2; top: 50%; left: clamp(0.3rem, 1.3vw, 1.5rem); translate: 0 -50%; }
-.trail ol { display: grid; gap: 0.9rem; list-style: none; margin: 0; padding: 0; }
+.trail {
+  position: fixed; z-index: 2; top: 50%; left: clamp(0.3rem, 1.3vw, 1.5rem); translate: 0 -50%;
+  /* The weave widens with the page margin, so it never reaches the content. */
+  --step: 3rem; --weave: clamp(0.2rem, 1.6vw - 0.7rem, 1.1rem); --at: 0;
+}
+.trail ol { position: relative; display: grid; gap: calc(var(--step) - 1.5rem); list-style: none; margin: 0; padding: 0; }
+.trail li:nth-child(even) { translate: var(--weave) 0; }
 .trail a { position: relative; display: block; width: 1.5rem; height: 1.5rem; text-decoration: none; }
 .trail a::before {
   content: ''; position: absolute; inset: 0.42rem; border: 1.5px solid var(--ink); border-radius: 50%;
   background: var(--paper); transition: scale 200ms ease, background-color 200ms ease;
 }
-.trail li + li a::after {
-  content: ''; position: absolute; z-index: -1; left: 50%; bottom: calc(100% - 0.42rem); height: 1.74rem;
-  border-left: 1.5px dotted var(--ink); translate: -50% 0;
-}
 .trail a.is-done::before, .trail a[aria-current]::before { border-color: var(--red); background: var(--red); }
-.trail li + li a.is-done::after, .trail li + li a[aria-current]::after { border-color: var(--red); }
 .trail a[aria-current]::before { scale: 1.45; }
-.trail span {
-  position: absolute; top: 50%; left: 100%; translate: -4px -50%; padding: 0.18rem 0.5rem; border-radius: 2px;
-  color: var(--on-ink); background: var(--ink); font: 700 0.72rem/1.3 var(--body); white-space: nowrap;
-  opacity: 0; pointer-events: none; transition: opacity 160ms ease, translate 160ms ease;
+/* The same dotted weave as the route below: a muted line for the whole page, a red one revealed as far as the reader has come. */
+.trail-line { position: absolute; top: 0.75rem; left: 0.75rem; width: var(--weave); height: calc((var(--stops) - 1) * var(--step)); overflow: visible; pointer-events: none; }
+.trail-line path { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 1 6; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.trail-walked { clip-path: inset(-4px -4px calc((var(--stops) - 1 - var(--at)) * var(--step)) -4px); transition: clip-path 450ms cubic-bezier(.2, .8, .2, 1); }
+.trail-walked path { stroke: var(--red); stroke-width: 2.5; }
+@media (min-width: 901px) {
+  /* The current stop is a pin, like the ones on the route. */
+  .trail a[aria-current]::before {
+    scale: 1.7; border-color: transparent; background: radial-gradient(circle at 35% 30%, var(--red-light), var(--red) 60%);
+    box-shadow: 0 0 0 2px var(--paper), 1px 2px 5px 1px var(--shade-3);
+  }
+  /* Each stop's name is a small handwritten note that pops out beside it. */
+  .trail span {
+    position: absolute; top: 50%; left: calc(100% + 0.2rem); translate: 0 -50%; rotate: -3deg; scale: 0.8; transform-origin: left center;
+    padding: 0.1rem 0.6rem 0.22rem; color: var(--note-ink); background: var(--note); box-shadow: 1px 4px 8px var(--shade-3);
+    font: 600 1.2rem/1.15 var(--hand); white-space: nowrap;
+    opacity: 0; pointer-events: none; transition: opacity 160ms ease, scale 220ms cubic-bezier(.3, 1.4, .6, 1);
+  }
+  .trail li:nth-child(even) span { rotate: 2deg; }
+  .trail a:hover span, .trail a:focus-visible span { opacity: 1; scale: 1; }
 }
-.trail a:hover span, .trail a:focus-visible span { opacity: 1; translate: 0 -50%; }
+/* Where the margin is wide enough to hold it, the current stop keeps its note out. */
+@media (min-width: 1720px) {
+  .trail a[aria-current] span { opacity: 1; scale: 1; }
+}
 
 .band { margin-top: clamp(4.5rem, 10vw, 9rem); }
 .section-head { margin-bottom: clamp(1.8rem, 3.5vw, 3.2rem); }
@@ -376,26 +411,35 @@ h1 em, h2 em { color: var(--red); font: italic 500 1.02em/1 var(--serif); letter
   .trail ol { grid-auto-flow: column; align-items: center; gap: 0; }
   .trail a { width: 2.75rem; height: 2.75rem; }
   .trail a::before { inset: 1.04rem; }
-  .trail li + li a::after { left: auto; right: calc(100% + 1.04rem); bottom: 50%; width: 1.1rem; height: 0; border-left: 0; border-top: 1.5px dotted var(--ink); translate: 0 50%; }
+  /* One line runs dot to dot behind the pill's dots; each dot and the current label sit on paper, so the line only shows between them. */
+  .trail ol { isolation: isolate; }
+  .trail-line { display: none; }
+  .trail li:nth-child(even) { translate: none; }
+  .trail ol::before { content: ''; position: absolute; z-index: -1; top: 50%; left: 1.375rem; right: 1.375rem; border-top: 1.5px dotted var(--ink); }
   .trail span { display: none; }
-  .trail a[aria-current] { width: auto; padding: 0 0.7rem 0 2.2rem; }
+  .trail a[aria-current] { width: auto; padding: 0 0 0 1.7rem; }
   .trail a[aria-current]::before { inset: 1.04rem auto 1.04rem 1.04rem; width: 0.66rem; }
-  .trail a[aria-current] span { display: block; position: static; translate: none; padding: 0; color: var(--ink); background: none; line-height: 2.75rem; opacity: 1; }
+  .trail a[aria-current] span { display: block; position: static; translate: none; padding: 0 0.7rem 0 0.5rem; color: var(--ink); background: var(--sheet); font-size: 0.72rem; font-weight: 700; line-height: 2.75rem; white-space: nowrap; opacity: 1; }
   body:has(.trail) .footer { padding-bottom: 4.2rem; }
   .note-path { margin: 0 0 1.6rem; }
 }
 @media (max-width: 700px) {
   .print-lead .print-link { display: flex; }
-  .print-lead .print-caption { margin-top: 0.65rem; }
+  .print-lead .print-caption { align-self: stretch; margin-top: 0.65rem; }
   .masthead { min-height: 4rem; gap: 0.65rem; }
   .masthead nav { gap: 0.7rem; font-size: 0.88rem; }
-  .desktop-link { padding: 0.28rem 0.36rem; font-size: 0.63rem; }
+  /* Header links keep a 44px touch target on phones. */
+  .masthead nav a { padding-block: 0.75rem; }
+  .desktop-link { display: inline-flex; align-items: center; min-height: 2.75rem; padding: 0 0.55rem; font-size: 0.72rem; }
+  .detail h1 { text-wrap: balance; }
   .wordmark { font-size: 2rem; }
   .spread { grid-template-columns: 1fr; gap: 0.65rem; padding-top: 1.2rem; }
   .portrait { width: min(100%, 25rem); margin: auto; }
   .portrait-sticker { margin: 0 auto; width: 84%; }
   .portrait-spark { top: 11%; right: 8%; }
   .portrait-mark { bottom: 0.8rem; left: 14%; font-size: 2rem; }
+  /* On a narrow portrait the top-left note lands on the face; it sits on the jacket instead. */
+  .note-hero { top: auto; bottom: 16%; left: auto; right: 2%; rotate: 4deg; }
   .intro h1 { font-size: clamp(2.7rem, 10vw, 4.8rem); }
   .detail-grid { grid-template-columns: 1fr; }
   .case-head { grid-template-columns: 1fr; grid-template-areas: 'title' 'lede' 'actions' 'facts'; }
@@ -424,8 +468,13 @@ h1 em, h2 em { color: var(--red); font: italic 500 1.02em/1 var(--serif); letter
   .print:not(.print-lead) .rank { top: 0.3rem; left: -0.4rem; font-size: 0.95rem; }
   .print:not(.print-lead) .print-caption { flex-wrap: wrap; margin-top: 0; }
   .case-actions .btn { flex: 1 1 100%; justify-content: center; }
-  .route-preview b { font-size: 0.95rem; }
-  .route-preview span { font-size: 1rem; }
+  /* Stacked, each dot sits beside its words, so the connecting weave never crosses text. */
+  .route-preview { grid-template-columns: 1fr; row-gap: 0.9rem; }
+  .route-preview li { padding: 0 0 0 2rem; }
+  .route-preview li::before { top: 0.2rem; }
+  .route-preview a { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 0.6rem; }
+  .route-preview b { font-size: 1.05rem; }
+  .route-preview span { font-size: 1.1rem; }
   .contact-strip { align-items: start; flex-direction: column; }
 }
 @media (prefers-reduced-motion: no-preference) {

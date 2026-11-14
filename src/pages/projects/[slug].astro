@@ -14,7 +14,7 @@ const schema = {
   '@type': 'SoftwareSourceCode',
   name: project.name,
   description: project.summary,
-  codeRepository: project.repository,
+  codeRepository: project.private ? undefined : project.repository,
   url: new URL(Astro.url.pathname, Astro.site).href,
 };
 ---
@@ -26,7 +26,7 @@ const schema = {
       <p class="case-lede">{project.summary}</p>
       <div class="case-actions">
         {project.live && <a class="btn btn-solid" href={project.live}>Open the live site <span aria-hidden="true">↗</span></a>}
-        {project.repository && <a class:list={['btn', project.live ? 'btn-line' : 'btn-solid']} href={project.repository}>Read the source <span aria-hidden="true">↗</span></a>}
+        {!project.private && <a class:list={['btn', project.live ? 'btn-line' : 'btn-solid']} href={project.repository}>Read the source <span aria-hidden="true">↗</span></a>}
       </div>
       <dl class="case-facts">
         <div><dt>GitHub</dt><dd><Stars project={project} /></dd></div>

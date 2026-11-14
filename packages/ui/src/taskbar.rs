@@ -219,6 +219,48 @@ pub fn Taskbar(props: TaskbarProps) -> Element {
                                 }
 
                                 a {
+                                    href: "https://x.com/KSrivarsan",
+                                    target: "_blank",
+                                    rel: "noopener noreferrer",
+                                    style: "display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 0.375rem; transition: background-color 0.15s; text-decoration: none; color: #fff;",
+                                    class: "hover:bg-white/10 text-white/80 hover:text-white group",
+                                    svg {
+                                        xmlns: "http://www.w3.org/2000/svg",
+                                        width: "20",
+                                        height: "20",
+                                        view_box: "0 0 24 24",
+                                        fill: "currentColor",
+                                        class: "group-hover:scale-110 transition-transform",
+                                        path { d: "M18.9 2H22l-7.5 8.6L23.3 22h-6.9l-5.4-7-6.2 7H1.7l8-9.2L1.2 2h7.1l4.9 6.4zm-1.2 18h1.9L7.4 3.9H5.4z" }
+                                    }
+                                    span { style: "font-size: 0.875rem;", "X" }
+                                }
+
+                                a {
+                                    href: "https://www.linkedin.com/in/ksrivarsan/",
+                                    target: "_blank",
+                                    rel: "noopener noreferrer",
+                                    style: "display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 0.375rem; transition: background-color 0.15s; text-decoration: none; color: #fff;",
+                                    class: "hover:bg-white/10 text-white/80 hover:text-white group",
+                                    svg {
+                                        xmlns: "http://www.w3.org/2000/svg",
+                                        width: "20",
+                                        height: "20",
+                                        view_box: "0 0 24 24",
+                                        fill: "none",
+                                        stroke: "currentColor",
+                                        stroke_width: "2",
+                                        stroke_linecap: "round",
+                                        stroke_linejoin: "round",
+                                        class: "group-hover:scale-110 transition-transform",
+                                        path { d: "M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z" }
+                                        rect { x: "2", y: "9", width: "4", height: "12" }
+                                        circle { cx: "4", cy: "4", r: "2" }
+                                    }
+                                    span { style: "font-size: 0.875rem;", "LinkedIn" }
+                                }
+
+                                a {
                                     href: "mailto:srivarsankannan@gmail.com",
                                     style: "display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 0.375rem; transition: background-color 0.15s; text-decoration: none; color: #fff;",
                                     class: "hover:bg-white/10 text-white/80 hover:text-white group",
