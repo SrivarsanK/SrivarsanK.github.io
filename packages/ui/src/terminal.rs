@@ -259,11 +259,14 @@ pub fn Terminal(props: TerminalProps) -> Element {
                                         a { href: "https://github.com/SrivarsanK", target: "_blank", class: "text-white hover:text-white/80 transition-colors flex items-center gap-1 border border-border/50 px-2 py-1 rounded bg-background/30", style: "color: white; text-decoration: none;",
                                             span { "GitHub" }
                                         }
-                                        a { href: "https://linkedin.com/in/ksrivarsan", target: "_blank", class: "text-white hover:text-white/80 transition-colors flex items-center gap-1 border border-border/50 px-2 py-1 rounded bg-background/30", style: "color: white; text-decoration: none;",
+                                        a { href: "https://x.com/KSrivarsan", target: "_blank", class: "text-white hover:text-white/80 transition-colors flex items-center gap-1 border border-border/50 px-2 py-1 rounded bg-background/30", style: "color: white; text-decoration: none;",
+                                            span { "X" }
+                                        }
+                                        a { href: "https://www.linkedin.com/in/ksrivarsan/", target: "_blank", class: "text-white hover:text-white/80 transition-colors flex items-center gap-1 border border-border/50 px-2 py-1 rounded bg-background/30", style: "color: white; text-decoration: none;",
                                             span { "LinkedIn" }
                                         }
-                                        a { href: "https://x.com/KSrivarsan", target: "_blank", class: "text-white hover:text-white/80 transition-colors flex items-center gap-1 border border-border/50 px-2 py-1 rounded bg-background/30", style: "color: white; text-decoration: none;",
-                                            span { "X/Twitter" }
+                                        a { href: "mailto:srivarsankannan@gmail.com", class: "text-white hover:text-white/80 transition-colors flex items-center gap-1 border border-border/50 px-2 py-1 rounded bg-background/30", style: "color: white; text-decoration: none;",
+                                            span { "Email" }
                                         }
                                         a { href: "https://www.instagram.com/srivarsankannan", target: "_blank", class: "text-white hover:text-white/80 transition-colors flex items-center gap-1 border border-border/50 px-2 py-1 rounded bg-background/30", style: "color: white; text-decoration: none;",
                                             span { "Instagram" }

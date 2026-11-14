@@ -2,14 +2,23 @@ export const profile = {
   name: 'Srivarsan K',
   github: 'https://github.com/SrivarsanK',
   linkedin: 'https://www.linkedin.com/in/ksrivarsan/',
+  x: 'https://x.com/KSrivarsan',
   email: 'srivarsankannan@gmail.com',
   title: 'Open-Source AI & Full-Stack Developer',
   description: 'Srivarsan K is an open-source AI and full-stack developer in Chennai, building developer tools and AI in TypeScript, Python and Rust. Open to internships.',
 };
 
+// Every place that lists my socials uses this, in this order: [label, link, what the button reveals].
+export const socials = [
+  ['GitHub', profile.github, '@SrivarsanK'],
+  ['X', profile.x, '@KSrivarsan'],
+  ['LinkedIn', profile.linkedin, 'Srivarsan K'],
+  ['Email', 'mailto:' + profile.email, profile.email],
+];
+
 // `started` is the month the repository was created; it orders the path section.
 // Each project has a 1200x750 screenshot of it running locally at public/media/projects/<slug>.webp; `shot` is its alt text.
-// `stars` is a fallback: the build replaces it with the live count from GitHub.
+// `stars` is a fallback: the build replaces it with the live count from GitHub, and GitHub also decides whether a repository is private.
 const catalogue = [
   {
     slug: 'glide',
@@ -55,7 +64,7 @@ const catalogue = [
     summary: 'Five coordinated AI agents for creator management and analytics.',
     repository: 'https://github.com/SrivarsanK/aws_a4b',
     started: '2026-05',
-    context: 'AI for Bharat hackathon',
+    context: 'AWS AI for Bharat Hackathon',
     stack: ['Python', 'TypeScript', 'LangGraph', 'PostgreSQL', 'Redis', 'AWS'],
     sections: [
       ['What it does', 'Nexus Solo is an AI-powered creator management project. Five agents handle content, trends, crisis monitoring, brand deals, and analytics.'],
@@ -70,13 +79,14 @@ const catalogue = [
     name: 'Blindspot',
     category: 'Fraud investigation console',
     summary: 'A Rust and React console that flags money-mule networks in real-time payment streams.',
+    repository: 'https://github.com/SrivarsanK/synesis',
     started: '2026-10',
-    context: 'Private repository',
+    context: 'Synesis Hackathon 2026',
     stack: ['Rust', 'React', 'TypeScript', 'SQLite', 'Cytoscape.js', 'Python'],
     sections: [
       ['What it does', 'Blindspot helps fraud analysts find money-mule accounts in instant payment systems such as UPI. It looks for money that arrives from several accounts and leaves again within minutes.'],
       ['How it detects', 'The Rust engine keeps rolling in-memory windows for each account. It raises a candidate when at least three different senders pay in within 15 minutes and at least 80% of that money moves out within the next 10. Accounts with a history of regular merchant settlements get a 30-point risk reduction, which keeps ordinary sellers out of the high-priority queue.'],
-      ['Scope', 'Every case carries reason codes and an interactive transaction graph. Blindspot supports an analyst’s decision; it doesn’t freeze funds on its own. Risk scores are hand-tuned rankings, and the demo data is synthetic. The source is in a private repository.'],
+      ['Scope', 'Every case carries reason codes and an interactive transaction graph. Blindspot supports an analyst’s decision; it doesn’t freeze funds on its own. Risk scores are hand-tuned rankings, and the demo data is synthetic.'],
     ],
   },
   {
@@ -159,19 +169,23 @@ export const skillGroups = [
 ];
 
 const headers = { Accept: 'application/vnd.github+json', ...(process.env.GITHUB_TOKEN && { Authorization: 'Bearer ' + process.env.GITHUB_TOKEN }) };
-const liveStars = async (project) => {
-  if (!project.repository) return project.stars;
+// A private repository answers 404 to the public API, so it reads as private; any other failure keeps the fallbacks.
+const liveRepo = async (project) => {
+  if (!project.repository) return { private: true };
   try {
     const response = await fetch('https://api.github.com/repos' + new URL(project.repository).pathname, { headers });
-    return response.ok ? (await response.json()).stargazers_count : project.stars;
+    if (response.status === 404) return { private: true };
+    if (!response.ok) return {};
+    const repo = await response.json();
+    return { stars: repo.stargazers_count, private: repo.private };
   } catch {
-    return project.stars;
+    return {};
   }
 };
 
 // Ranked by stars, most first. A private repository has no public count and ranks last.
-export const projects = (await Promise.all(catalogue.map(async (project) => ({ ...project, stars: await liveStars(project) }))))
-  .sort((a, b) => b.stars - a.stars);
+export const projects = (await Promise.all(catalogue.map(async (project) => ({ ...project, private: false, ...(await liveRepo(project)) }))))
+  .sort((a, b) => a.private - b.private || b.stars - a.stars);
 
 export const usedIn = (skill) => projects.filter((project) => project.stack.includes(skill));
 

@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import ProjectArt from '../components/ProjectArt.astro';
 import Stars from '../components/Stars.astro';
+import Socials from '../components/Socials.astro';
 import { profile, projects, skillGroups, usedIn, monthLabel } from '../data/portfolio.js';
 
 const schema = {
@@ -19,13 +20,13 @@ const schema = {
     jobTitle: profile.title,
     knowsAbout: ['Open source', ...skillGroups.flatMap((group) => group.skills)],
     homeLocation: { '@type': 'Place', name: 'Chennai, India' },
-    sameAs: [profile.linkedin, profile.github],
+    sameAs: [profile.linkedin, profile.github, profile.x],
     affiliation: { '@type': 'CollegeOrUniversity', name: 'SRM Institute of Science and Technology, Ramapuram' },
   },
 };
 
 const totalStars = projects.reduce((sum, project) => sum + project.stars, 0);
-const publicRepos = projects.filter((project) => project.repository).length;
+const publicRepos = projects.filter((project) => !project.private).length;
 // Most-used first, so a recruiter's eye lands on the skills with the most proof behind them.
 const byUse = (skills) => [...skills].sort((a, b) => usedIn(b).length - usedIn(a).length);
 
@@ -43,9 +44,14 @@ const routeX = (i) => (i % 2 ? 78 : 22);
 const route = path.map((_, i) => (i === 0
   ? 'M' + routeX(0) + ' 50'
   : 'C' + routeX(i - 1) + ' ' + i * 100 + ' ' + routeX(i) + ' ' + i * 100 + ' ' + routeX(i) + ' ' + (i * 100 + 50))).join('');
+// The side trail weaves like the route: x flips between 0 and 1 at each stop, one unit of y per stop; CSS stretches it to size.
+const trailPath = stops.map((_, i) => (i === 0 ? 'M0 0' : 'C' + ((i - 1) % 2) + ' ' + (i - 0.5) + ' ' + (i % 2) + ' ' + (i - 0.5) + ' ' + (i % 2) + ' ' + i)).join('');
 ---
 <Base title={profile.name + ' | ' + profile.title} description={profile.description} schema={schema}>
-  <nav class="trail" aria-label="Sections of this page">
+  <nav class="trail" aria-label="Sections of this page" style={'--stops:' + stops.length}>
+    {['trail-line', 'trail-line trail-walked'].map((name) => (
+      <svg class={name} viewBox={'0 0 1 ' + (stops.length - 1)} preserveAspectRatio="none" aria-hidden="true"><path d={trailPath} /></svg>
+    ))}
     <ol>
       {stops.map(([id, label]) => <li><a href={'#' + id} data-trail={id}><span>{label}</span></a></li>)}
     </ol>
@@ -67,10 +73,7 @@ const route = path.map((_, i) => (i === 0
           <div class="intro-grid">
             <div data-hero-copy>
               <p>I’m an open-source AI and full-stack developer in Chennai, building developer tools and AI systems while I study at SRMIST Ramapuram.</p>
-              <div class="intro-links">
-                <a class="ink-link" rel="me" href={profile.linkedin}>LinkedIn <span aria-hidden="true">↗</span></a>
-                <a class="ink-link" rel="me" href={profile.github}>GitHub <span aria-hidden="true">↗</span></a>
-              </div>
+              <Socials buttons />
             </div>
             <dl class="notes" data-hero-copy>
               <div><dt>Open source</dt><dd>{totalStars} GitHub stars<br/>across {publicRepos} public repos</dd></div>
@@ -78,9 +81,12 @@ const route = path.map((_, i) => (i === 0
               <div><dt>Focus</dt><dd>Developer tools<br/>Agentic AI · Edge AI</dd></div>
             </dl>
           </div>
-          <ol class="route-preview" aria-label="What’s on this page" data-hero-copy>
-            {stops.slice(1).map(([id, label, caption]) => <li><a href={'#' + id}><b>{label}</b><span>{caption}</span></a></li>)}
-          </ol>
+          <div class="route-preview-wrap" data-hero-copy data-route-preview>
+            <svg class="route-preview-line" aria-hidden="true"><path /></svg>
+            <ol class="route-preview" aria-label="What’s on this page">
+              {stops.slice(1).map(([id, label, caption]) => <li><a href={'#' + id}><b>{label}</b><span>{caption}</span></a></li>)}
+            </ol>
+          </div>
         </section>
       </div>
     </div>
@@ -156,7 +162,7 @@ const route = path.map((_, i) => (i === 0
       <div>
         <h2 id="contact-title">Let’s build <em>something.</em></h2>
         <p>Hiring, open source, or want my résumé? Send a message and I’ll reply by email.</p>
-        <div class="intro-links"><a class="ink-link" rel="me" href={profile.linkedin}>LinkedIn <span aria-hidden="true">↗</span></a></div>
+        <Socials buttons />
       </div>
       <!-- shortcut: FormSubmit relays to the inbox from a static page; swap the address for its random alias after activation, or host api/contact.rs if you need full control. -->
       <form class="contact-form" action={'https://formsubmit.co/' + profile.email} method="POST" data-contact-form>
@@ -188,9 +194,32 @@ const route = path.map((_, i) => (i === 0
         if (i === at) link.setAttribute('aria-current', 'location');
         else link.removeAttribute('aria-current');
       });
+      // The red line is revealed down to the current stop.
+      document.querySelector<HTMLElement>('.trail')!.style.setProperty('--at', String(at));
     };
     addEventListener('scroll', markTrail, { passive: true });
     markTrail();
+
+    // One dotted curve through the preview's dots, redrawn whenever the layout moves them:
+    // an arc between stops on one row, a gentle weave between stacked stops.
+    const preview = document.querySelector<HTMLElement>('[data-route-preview]')!;
+    const drawPreview = () => {
+      const box = preview.getBoundingClientRect();
+      const dots = [...preview.querySelectorAll('li')].map((li) => {
+        const r = li.getBoundingClientRect();
+        const dot = getComputedStyle(li, '::before');
+        return [r.left - box.left + parseFloat(dot.left) + parseFloat(dot.width) / 2, r.top - box.top + parseFloat(dot.top) + parseFloat(dot.height) / 2];
+      });
+      const d = dots.map(([x, y], i) => {
+        if (i === 0) return `M${x} ${y}`;
+        const [px, py] = dots[i - 1];
+        if (Math.abs(y - py) < 2) return `C${px + (x - px) / 3} ${y - 12} ${x - (x - px) / 3} ${y - 12} ${x} ${y}`;
+        const bulge = i % 2 ? 14 : -14;
+        return `C${px + bulge} ${py + (y - py) / 2} ${x + bulge} ${y - (y - py) / 2} ${x} ${y}`;
+      }).join('');
+      preview.querySelector('path')!.setAttribute('d', d);
+    };
+    new ResizeObserver(drawPreview).observe(preview);
 
     // Without JavaScript the form still posts normally; with it, the reader stays on the page.
     const form = document.querySelector<HTMLFormElement>('[data-contact-form]')!;
@@ -209,7 +238,7 @@ const route = path.map((_, i) => (i === 0
         if (moves()) gsap.fromTo(status, { scale: 0.85, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: 'back.out(2.2)' });
       } catch {
         // Typed text is kept, so nothing is lost on failure.
-        status.textContent = 'That didn’t send. Please try again, or reach me on LinkedIn.';
+        status.textContent = 'That didn’t send. Please try again, or email me directly.';
         if (moves()) gsap.fromTo(form, { x: 0 }, { keyframes: { x: [-6, 6, -4, 0] }, duration: 0.35, ease: 'power1.inOut' });
       }
       button.disabled = false;
