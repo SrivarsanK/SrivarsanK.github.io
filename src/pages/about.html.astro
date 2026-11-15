@@ -1,19 +1,60 @@
 ---
 import Base from '../layouts/Base.astro';
 import Socials from '../components/Socials.astro';
+import { profile, ageOn, studyLabel } from '../data/portfolio.js';
+
+const now = new Date();
+const age = ageOn(now);
+const [start, end] = profile.batch;
+const schema = {
+  '@context': 'https://schema.org',
+  // The homepage is the profile; this page describes it, so it is an AboutPage rather than a second ProfilePage.
+  '@type': 'AboutPage',
+  url: new URL('/about.html', Astro.site).href,
+  mainEntity: {
+    '@type': 'Person',
+    '@id': new URL('/#person', Astro.site).href,
+    name: profile.name,
+    jobTitle: profile.title,
+    // Age, not birth date: the page states it, the structured data does not need it.
+    affiliation: { '@type': 'CollegeOrUniversity', name: 'SRM Institute of Science and Technology, Ramapuram' },
+    knowsAbout: ['Compiler design', 'Abstract syntax trees', 'Artificial intelligence', 'Open source', 'Developer tools', 'Full-stack development'],
+    sameAs: [profile.github, profile.x, profile.linkedin],
+  },
+};
 ---
-<Base title="About Srivarsan K | Open-Source Developer & DSC Technical Lead" description="Meet Srivarsan K, an open-source AI and full-stack developer at SRMIST Ramapuram and Technical Lead at the Developer Students Club in Chennai." path="/about.html">
+<Base
+  title="Srivarsan K | B.Tech AI Student & Open-Source Developer"
+  description={`Srivarsan K, ${age}, is a B.Tech Artificial Intelligence student (${end} batch) at SRMIST Chennai who builds open-source developer tools. Open to internships.`}
+  path="/about.html"
+  schema={schema}
+>
   <main id="main" class="detail">
     <a class="ink-link" href="/">← Home</a>
     <div class="detail-grid">
       <div>
         <p class="eyebrow">Chennai, India</p>
         <h1>About <strong>Srivarsan K.</strong></h1>
-        <p class="lede">I’m an Artificial Intelligence student at SRM Institute of Science and Technology, Ramapuram, working on developer tools and applied AI.</p>
-        <h2>What I build</h2>
-        <p>I work across the stack, from <a href="/projects/glide/">Glide’s visual editing and source transformation</a> to <a href="/projects/nexus-solo/">Nexus Solo’s agent coordination</a> and <a href="/projects/urjabandhu/">UrjaBandhu’s appliance-level energy analytics</a>.</p>
+        <p class="lede">I’m {age}, doing a {profile.course} at SRM Institute of Science and Technology, Ramapuram, class of {end}. Most of my waking hours go into open-source developer tools and AI that does the boring work so people don’t have to.</p>
+        <dl class="case-facts about-facts">
+          <div><dt>Age</dt><dd>{age}</dd></div>
+          <div><dt>Studying</dt><dd>{profile.course}</dd></div>
+          <div><dt>College</dt><dd>SRMIST Ramapuram, Chennai</dd></div>
+          <div><dt>Batch</dt><dd>{start}–{end}, {studyLabel(now)}</dd></div>
+          <div><dt>Looking for</dt><dd>Internships and open-source work</dd></div>
+        </dl>
+
+        <h2>My favourite tree is an abstract syntax tree</h2>
+        <p><a href="/projects/glide/">Glide</a>, my most-starred project, began with a simple wish: drag a button in the browser and have the change land in the source file. Doing that honestly means parsing the code into a syntax tree, editing the tree, and printing it back without disturbing anyone’s formatting or comments. That is a compiler pass in everything but name, and it’s how I fell for compiler design. Lexers, parsers and transforms are now what I read about for fun, so if you ask me about ASTs, budget some extra time.</p>
+
+        <h2>What else I build</h2>
+        <p>A lot of my projects start at a hackathon and refuse to stay a demo: <a href="/projects/ridesuraksha/">RideSuraksha</a>, income insurance that pays delivery workers when the weather stops work; <a href="/projects/nexus-solo/">Nexus Solo</a>, five AI agents that run a creator’s content, deals and analytics; <a href="/projects/yara/">YARA</a>, a public transit platform from Smart India Hackathon 2026; and <a href="/projects/blindspot/">Blindspot</a>, a Rust console that follows money-mule chains through payment streams.</p>
+
         <h2>Developer Students Club</h2>
-        <p>I’m a Technical Lead at DSC SRMIST Ramapuram. I coordinated Technorally 2.0 and co-organized DevSummit ’26, working with student teams, faculty, and speakers.</p>
+        <p>I’m a Technical Lead at DSC SRMIST Ramapuram.</p>
+
+        <h2>Open to internships</h2>
+        <p>I’m looking for internships and open-source work in AI, developer tools, compilers and full-stack engineering. If you’re hiring from the {end} batch, <a href="/#contact">send me a message</a> and I’ll reply by email, résumé included.</p>
         <Socials buttons />
       </div>
       <img class="about-art" src="/media/srivarsan-hero-small.webp" width="460" height="575" alt="Portrait of Srivarsan K" decoding="async" />

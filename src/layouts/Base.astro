@@ -5,8 +5,10 @@ import '@fontsource-variable/bodoni-moda/wght-italic.css';
 import '@fontsource-variable/caveat/wght.css';
 import '../styles/site.css';
 import Socials from '../components/Socials.astro';
+// Preloaded so headings render in their own face first time, instead of swapping fonts and shifting the layout.
+import headingFont from '@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2?url';
 
-const { title, description, path = Astro.url.pathname, schema } = Astro.props;
+const { title, description, path = Astro.url.pathname, schema, noindex = false } = Astro.props;
 const canonical = new URL(path, Astro.site);
 const socialImage = new URL('/media/social-card.jpg', Astro.site);
 ---
@@ -16,9 +18,10 @@ const socialImage = new URL('/media/social-card.jpg', Astro.site);
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#ede7db" />
+    <link rel="preload" href={headingFont} as="font" type="font/woff2" crossorigin />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical.href} />
+    {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical.href} />}
     <link rel="icon" type="image/png" href="/media/mark.png" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Srivarsan K" />
