@@ -166,44 +166,35 @@ h1 em, h2 em { color: var(--red); font: italic 500 1.02em/1 var(--serif); letter
 .note-more:hover, .note-more:focus-visible { rotate: 0deg; }
 .note-path { max-width: 21rem; margin: -4.5rem 2% 2rem auto; rotate: 2deg; }
 
-.trail {
-  position: fixed; z-index: 2; top: 50%; left: clamp(0.3rem, 1.3vw, 1.5rem); translate: 0 -50%;
-  /* The weave widens with the page margin, so it never reaches the content. */
-  --step: 3rem; --weave: clamp(0.2rem, 1.6vw - 0.7rem, 1.1rem); --at: 0;
-}
-.trail ol { position: relative; display: grid; gap: calc(var(--step) - 1.5rem); list-style: none; margin: 0; padding: 0; }
-.trail li:nth-child(even) { translate: var(--weave) 0; }
-.trail a { position: relative; display: block; width: 1.5rem; height: 1.5rem; text-decoration: none; }
+.trail { position: fixed; z-index: 2; }
+.trail ol { position: relative; display: grid; list-style: none; margin: 0; padding: 0; }
+.trail a { position: relative; display: block; text-decoration: none; }
 .trail a::before {
   content: ''; position: absolute; inset: 0.42rem; border: 1.5px solid var(--ink); border-radius: 50%;
   background: var(--paper); transition: scale 200ms ease, background-color 200ms ease;
 }
 .trail a.is-done::before, .trail a[aria-current]::before { border-color: var(--red); background: var(--red); }
 .trail a[aria-current]::before { scale: 1.45; }
-/* The same dotted weave as the route below: a muted line for the whole page, a red one revealed as far as the reader has come. */
-.trail-line { position: absolute; top: 0.75rem; left: 0.75rem; width: var(--weave); height: calc((var(--stops) - 1) * var(--step)); overflow: visible; pointer-events: none; }
-.trail-line path { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 1 6; stroke-linecap: round; vector-effect: non-scaling-stroke; }
-.trail-walked { clip-path: inset(-4px -4px calc((var(--stops) - 1 - var(--at)) * var(--step)) -4px); transition: clip-path 450ms cubic-bezier(.2, .8, .2, 1); }
-.trail-walked path { stroke: var(--red); stroke-width: 2.5; }
 @media (min-width: 901px) {
-  /* The current stop is a pin, like the ones on the route. */
-  .trail a[aria-current]::before {
-    scale: 1.7; border-color: transparent; background: radial-gradient(circle at 35% 30%, var(--red-light), var(--red) 60%);
-    box-shadow: 0 0 0 2px var(--paper), 1px 2px 5px 1px var(--shade-3);
+  /* Binder index tabs on the right edge, like the dividers in a ring file, in the stack folders' colours.
+     Each needs only the page margin; the section you are in pulls out in red. */
+  .trail { top: 50%; right: 0; translate: 0 -50%; }
+  .trail ol { gap: 0.3rem; }
+  .trail a {
+    /* The page margin is 3.5vw a side, so the tab is sized from it and never reaches the content. */
+    display: grid; place-items: center; width: min(2.2rem, 3.5vw - 0.5rem); height: min(5.4rem, 11vh); border-radius: 0.6rem 0 0 0.6rem;
+    color: var(--ink); background: var(--tab); box-shadow: -2px 3px 8px var(--shade-2); translate: 0.45rem 0;
+    transition: translate 260ms cubic-bezier(.2, .8, .2, 1), background-color 200ms ease, color 200ms ease;
   }
-  /* Each stop's name is a small handwritten note that pops out beside it. */
-  .trail span {
-    position: absolute; top: 50%; left: calc(100% + 0.2rem); translate: 0 -50%; rotate: -3deg; scale: 0.8; transform-origin: left center;
-    padding: 0.1rem 0.6rem 0.22rem; color: var(--note-ink); background: var(--note); box-shadow: 1px 4px 8px var(--shade-3);
-    font: 600 1.2rem/1.15 var(--hand); white-space: nowrap;
-    opacity: 0; pointer-events: none; transition: opacity 160ms ease, scale 220ms cubic-bezier(.3, 1.4, .6, 1);
-  }
-  .trail li:nth-child(even) span { rotate: 2deg; }
-  .trail a:hover span, .trail a:focus-visible span { opacity: 1; scale: 1; }
-}
-/* Where the margin is wide enough to hold it, the current stop keeps its note out. */
-@media (min-width: 1720px) {
-  .trail a[aria-current] span { opacity: 1; scale: 1; }
+  .trail a::before { content: none; }
+  .trail span { writing-mode: vertical-rl; font: 800 0.8rem/1 var(--heading); letter-spacing: 0.01em; }
+  .trail li:nth-child(1) a { --tab: var(--note); }
+  .trail li:nth-child(2) a { --tab: var(--tone-1); }
+  .trail li:nth-child(3) a { --tab: var(--tone-2); }
+  .trail li:nth-child(4) a { --tab: var(--tone-3); }
+  .trail li:nth-child(5) a { --tab: var(--tone-4); }
+  .trail a:hover, .trail a:focus-visible { translate: 0 0; }
+  .trail a[aria-current] { translate: 0 0; color: var(--on-ink); background: var(--red); }
 }
 
 .band { margin-top: clamp(4.5rem, 10vw, 9rem); }
@@ -400,6 +391,7 @@ h1 em, h2 em { color: var(--red); font: italic 500 1.02em/1 var(--serif); letter
 .case-next:hover .shot { translate: 0 -2px; }
 .case-next:hover .shot-view img { scale: 1.03; }
 .about-art { width: min(100%, 24rem); height: auto; justify-self: center; }
+.about-facts { max-width: 36rem; margin-top: 1.4rem; }
 .stack { display: flex; flex-wrap: wrap; gap: 0.35rem; list-style: none; padding: 0; }
 .stack li { border: 1px solid var(--line); padding: 0.22rem 0.55rem; background: var(--sheet); font: 600 0.75rem/1.3 var(--mono); }
 
@@ -422,13 +414,12 @@ h1 em, h2 em { color: var(--red); font: italic 500 1.02em/1 var(--serif); letter
   .trail a::before { inset: 1.04rem; }
   /* One line runs dot to dot behind the pill's dots; each dot and the current label sit on paper, so the line only shows between them. */
   .trail ol { isolation: isolate; }
-  .trail-line { display: none; }
-  .trail li:nth-child(even) { translate: none; }
   .trail ol::before { content: ''; position: absolute; z-index: -1; top: 50%; left: 1.375rem; right: 1.375rem; border-top: 1.5px dotted var(--ink); }
-  .trail span { display: none; }
+  /* Hidden from sight, not from screen readers or agents: each dot keeps its section name as its link name. */
+  .trail span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .trail a[aria-current] { width: auto; padding: 0 0 0 1.7rem; }
   .trail a[aria-current]::before { inset: 1.04rem auto 1.04rem 1.04rem; width: 0.66rem; }
-  .trail a[aria-current] span { display: block; position: static; translate: none; padding: 0 0.7rem 0 0.5rem; color: var(--ink); background: var(--sheet); font-size: 0.72rem; font-weight: 700; line-height: 2.75rem; white-space: nowrap; opacity: 1; }
+  .trail a[aria-current] span { display: block; position: static; width: auto; height: auto; overflow: visible; clip-path: none; translate: none; padding: 0 0.7rem 0 0.5rem; color: var(--ink); background: var(--sheet); font-size: 0.72rem; font-weight: 700; line-height: 2.75rem; white-space: nowrap; opacity: 1; }
   body:has(.trail) .footer { padding-bottom: 4.2rem; }
   .note-path { margin: 0 0 1.6rem; }
 }

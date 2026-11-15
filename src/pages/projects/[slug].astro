@@ -2,23 +2,31 @@
 import Base from '../../layouts/Base.astro';
 import ProjectArt from '../../components/ProjectArt.astro';
 import Stars from '../../components/Stars.astro';
-import { profile, projects, monthLabel } from '../../data/portfolio.js';
+import { profile, projects, skillGroups, monthLabel } from '../../data/portfolio.js';
 
 export function getStaticPaths() {
   return projects.map((project, i) => ({ params: { slug: project.slug }, props: { project, rank: i + 1, next: projects[(i + 1) % projects.length] } }));
 }
 
 const { project, rank, next } = Astro.props;
+const home = new URL('/', Astro.site).href;
+// The summary alone is a fragment; naming the author and stack makes a full snippet search engines and AI answers can quote.
+const description = `${project.summary} Built by ${profile.name} with ${new Intl.ListFormat('en').format(project.stack.slice(0, 3))}.`;
 const schema = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareSourceCode',
   name: project.name,
-  description: project.summary,
-  codeRepository: project.private ? undefined : project.repository,
+  description,
   url: new URL(Astro.url.pathname, Astro.site).href,
+  image: new URL('/media/projects/' + project.slug + '.webp', Astro.site).href,
+  codeRepository: project.private ? undefined : project.repository,
+  dateCreated: project.started,
+  programmingLanguage: project.stack.filter((item) => skillGroups[0].skills.includes(item)),
+  keywords: project.stack.join(', '),
+  author: { '@type': 'Person', '@id': home + '#person', name: profile.name, url: home },
 };
 ---
-<Base title={project.name + ' | ' + project.category + ' | ' + profile.name} description={project.summary} schema={schema}>
+<Base title={project.name + ' | ' + project.category + ' | ' + profile.name} description={description} schema={schema}>
   <main id="main" class="case">
     <a class="ink-link" href="/#work">← All projects</a>
     <header class="case-head" data-enter>

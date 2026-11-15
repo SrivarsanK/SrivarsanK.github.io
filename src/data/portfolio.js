@@ -6,7 +6,30 @@ export const profile = {
   email: 'srivarsankannan@gmail.com',
   title: 'Open-Source AI & Full-Stack Developer',
   description: 'Srivarsan K is an open-source AI and full-stack developer in Chennai, building developer tools and AI in TypeScript, Python and Rust. Open to internships.',
+  born: '2006-09-09',
+  course: 'B.Tech Artificial Intelligence',
+  batch: [2024, 2028],
 };
+
+// Age and year of study are worked out at build time; the site rebuilds every six hours, so both stay current.
+export const ageOn = (date) => {
+  const born = new Date(profile.born);
+  const hadBirthday = date.getUTCMonth() > born.getUTCMonth() || (date.getUTCMonth() === born.getUTCMonth() && date.getUTCDate() >= born.getUTCDate());
+  return date.getUTCFullYear() - born.getUTCFullYear() - (hadBirthday ? 0 : 1);
+};
+// The academic year turns over in July.
+export const yearOfStudy = (date) => date.getUTCFullYear() - profile.batch[0] + (date.getUTCMonth() >= 6 ? 1 : 0);
+export const studyLabel = (date) => {
+  const year = yearOfStudy(date);
+  return year > 4 ? 'Graduated ' + profile.batch[1] : ['1st', '2nd', '3rd', '4th'][year - 1] + ' year';
+};
+
+// Self-check on every build: dates on either side of each boundary.
+for (const [got, want] of [
+  [ageOn(new Date('2026-09-08T12:00Z')), 19], [ageOn(new Date('2026-09-09T12:00Z')), 20],
+  [studyLabel(new Date('2026-06-30T12:00Z')), '2nd year'], [studyLabel(new Date('2026-11-15T12:00Z')), '3rd year'],
+  [studyLabel(new Date('2028-07-01T12:00Z')), 'Graduated 2028'],
+]) if (got !== want) throw new Error(`portfolio date maths: got ${got}, want ${want}`);
 
 // Every place that lists my socials uses this, in this order: [label, link, what the button reveals].
 export const socials = [

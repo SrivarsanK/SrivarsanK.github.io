@@ -5,24 +5,32 @@ import Stars from '../components/Stars.astro';
 import Socials from '../components/Socials.astro';
 import { profile, projects, skillGroups, usedIn, monthLabel } from '../data/portfolio.js';
 
+const home = new URL('/', Astro.site).href;
 const schema = {
   '@context': 'https://schema.org',
-  '@type': 'ProfilePage',
-  url: new URL('/', Astro.site).href,
-  mainEntity: {
-    '@type': 'Person',
-    '@id': new URL('/#person', Astro.site).href,
-    name: profile.name,
-    alternateName: ['K. Srivarsan', 'K Srivarsan'],
-    url: new URL('/', Astro.site).href,
-    image: new URL('/media/srivarsan-hero.webp', Astro.site).href,
-    description: profile.description,
-    jobTitle: profile.title,
-    knowsAbout: ['Open source', ...skillGroups.flatMap((group) => group.skills)],
-    homeLocation: { '@type': 'Place', name: 'Chennai, India' },
-    sameAs: [profile.linkedin, profile.github, profile.x],
-    affiliation: { '@type': 'CollegeOrUniversity', name: 'SRM Institute of Science and Technology, Ramapuram' },
-  },
+  '@graph': [
+    // The WebSite node is what lets Google show "Srivarsan K" as the site name in results.
+    { '@type': 'WebSite', '@id': home + '#website', url: home, name: profile.name, alternateName: ['K. Srivarsan'], author: { '@id': home + '#person' } },
+    {
+      '@type': 'ProfilePage',
+      url: home,
+      isPartOf: { '@id': home + '#website' },
+      mainEntity: {
+        '@type': 'Person',
+        '@id': home + '#person',
+        name: profile.name,
+        alternateName: ['K. Srivarsan', 'K Srivarsan'],
+        url: home,
+        image: new URL('/media/srivarsan-hero.webp', Astro.site).href,
+        description: profile.description,
+        jobTitle: profile.title,
+        knowsAbout: ['Open source', 'Compiler design', ...skillGroups.flatMap((group) => group.skills)],
+        homeLocation: { '@type': 'Place', name: 'Chennai, India' },
+        sameAs: [profile.linkedin, profile.github, profile.x],
+        affiliation: { '@type': 'CollegeOrUniversity', name: 'SRM Institute of Science and Technology, Ramapuram' },
+      },
+    },
+  ],
 };
 
 const totalStars = projects.reduce((sum, project) => sum + project.stars, 0);
@@ -44,14 +52,9 @@ const routeX = (i) => (i % 2 ? 78 : 22);
 const route = path.map((_, i) => (i === 0
   ? 'M' + routeX(0) + ' 50'
   : 'C' + routeX(i - 1) + ' ' + i * 100 + ' ' + routeX(i) + ' ' + i * 100 + ' ' + routeX(i) + ' ' + (i * 100 + 50))).join('');
-// The side trail weaves like the route: x flips between 0 and 1 at each stop, one unit of y per stop; CSS stretches it to size.
-const trailPath = stops.map((_, i) => (i === 0 ? 'M0 0' : 'C' + ((i - 1) % 2) + ' ' + (i - 0.5) + ' ' + (i % 2) + ' ' + (i - 0.5) + ' ' + (i % 2) + ' ' + i)).join('');
 ---
 <Base title={profile.name + ' | ' + profile.title} description={profile.description} schema={schema}>
-  <nav class="trail" aria-label="Sections of this page" style={'--stops:' + stops.length}>
-    {['trail-line', 'trail-line trail-walked'].map((name) => (
-      <svg class={name} viewBox={'0 0 1 ' + (stops.length - 1)} preserveAspectRatio="none" aria-hidden="true"><path d={trailPath} /></svg>
-    ))}
+  <nav class="trail" aria-label="Sections of this page">
     <ol>
       {stops.map(([id, label]) => <li><a href={'#' + id} data-trail={id}><span>{label}</span></a></li>)}
     </ol>
@@ -139,7 +142,7 @@ const trailPath = stops.map((_, i) => (i === 0 ? 'M0 0' : 'C' + ((i - 1) % 2) + 
         <h2 id="path-title">How I <em>got here</em></h2>
         <p>{path.length} builds since {monthLabel(path[0].started)}, in the order I started them.</p>
       </header>
-      <p class="note note-path" data-note>Alongside all of this, I’m a Technical Lead at the Developer Students Club. I coordinated Technorally 2.0 and co-organized DevSummit ’26.</p>
+      <p class="note note-path" data-note>Alongside all of this, I’m a Technical Lead at the Developer Students Club.</p>
       <div class="route">
         <svg class="route-line" viewBox={'0 0 100 ' + path.length * 100} preserveAspectRatio="none" aria-hidden="true"><path d={route} /></svg>
         <ol>
@@ -195,8 +198,6 @@ const trailPath = stops.map((_, i) => (i === 0 ? 'M0 0' : 'C' + ((i - 1) % 2) + 
         if (i === at) link.setAttribute('aria-current', 'location');
         else link.removeAttribute('aria-current');
       });
-      // The red line is revealed down to the current stop.
-      document.querySelector<HTMLElement>('.trail')!.style.setProperty('--at', String(at));
     };
     addEventListener('scroll', markTrail, { passive: true });
     markTrail();
